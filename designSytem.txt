@@ -1,0 +1,157 @@
+STREETWEAR DISTRO – DESIGN SYSTEM (MODERN GRADIENT UI)
+=====================================================
+
+[ COLOR PALETTE ]
+----------------
+Primary (Base Black)         : #0F0F0F
+Background (Main White)      : #FFFFFF
+Background Secondary         : #F5F5F5
+Accent (Street Orange)       : #FF6B00
+Accent Light                 : #FF9F1C
+Text Primary                 : #111111
+Text Secondary               : #9CA3AF
+Border / Divider             : #E5E7EB
+
+
+[ GRADIENT SYSTEM ]
+-----------------
+Primary Gradient             : #FF6B00 → #FF9F1C
+Secondary Gradient           : #0F0F0F → #1F2933
+
+Usage Rules:
+- Gradient usage             : Allowed (controlled)
+- Max gradient per section   : 1
+- Gradient placement         : Hero, Promo Banner, Primary CTA
+- No gradient on body text
+- Product cards remain flat
+
+
+[ GLOBAL RULE ]
+-------------
+- Dominant color             : White (65–70%)
+- Base black usage           : Header, Footer, Buttons
+- Accent usage               : CTA, Price, Badge ONLY
+- Max accent color           : 1
+- Layout style               : Clean, bento-box inspired
+- White space                : Generous
+- Neon colors                : Not allowed
+
+
+[ HEADER / NAVBAR ]
+------------------
+Background                   : #0F0F0F
+Logo                          : #FFFFFF
+Menu text (default)           : #E5E7EB
+Menu text (hover / active)    : #FF6B00
+Search icon                  : #FFFFFF
+Cart icon                    : #FFFFFF
+Bottom border                : none
+
+
+[ HERO SECTION ]
+---------------
+Background                   : Product image OR Gradient
+Allowed gradient             : Primary or Secondary Gradient
+Headline text (dark bg)      : #FFFFFF
+Subheadline                  : #E5E7EB
+Primary CTA button            :
+    - Background             : Primary Gradient
+    - Text                   : #FFFFFF
+    - Hover                  : Solid #0F0F0F
+Secondary CTA (optional)     :
+    - Border                 : #FFFFFF
+    - Text                   : #FFFFFF
+
+
+[ CATEGORY SECTION ]
+-------------------
+Section background            : #FFFFFF
+Category card background      : #F5F5F5
+Category title                : #111111
+Hover effect                  : Border #FF6B00
+
+
+[ PRODUCT GRID / CARD ]
+---------------------
+Card background               : #FFFFFF
+Card border                   : #E5E7EB
+Product image                 : Full-width, no overlay
+Product name                  : #111111
+Price                          : #FF6B00
+Old price (if sale)           : #9CA3AF
+Add to Cart button             :
+    - Background              : #0F0F0F
+    - Text                    : #FFFFFF
+    - Hover                   : #FF6B00
+Badge (NEW / SALE)            :
+    - Background              : #FF6B00
+    - Text                    : #FFFFFF
+
+
+[ PRODUCT DETAIL PAGE ]
+---------------------
+Page background               : #FFFFFF
+Product title                 : #111111
+Price                          : #FF6B00
+Description text              : #6B7280
+Size / Color selector border   : #E5E7EB
+Active selection               : Border #FF6B00
+Stock info                     : #6B7280
+Primary button (Add to Cart)   :
+    - Background              : Primary Gradient
+    - Text                    : #FFFFFF
+    - Hover                   : Solid #0F0F0F
+
+
+[ CART PAGE ]
+------------
+Page background               : #FFFFFF
+Item card background          : #F5F5F5
+Item name                     : #111111
+Quantity control               :
+    - Border                  : #E5E7EB
+    - Active                  : #FF6B00
+Total price                   : #FF6B00
+Checkout button               :
+    - Background              : Primary Gradient
+    - Text                    : #FFFFFF
+    - Hover                   : Solid #0F0F0F
+
+
+[ CHECKOUT PAGE ]
+---------------
+Form background               : #FFFFFF
+Input border                  : #E5E7EB
+Input focus                   : #FF6B00
+Label text                    : #6B7280
+Primary button (Pay)           :
+    - Background              : Primary Gradient
+    - Text                    : #FFFFFF
+    - Hover                   : Solid #0F0F0F
+
+
+[ FOOTER ]
+----------
+Background                    : #0F0F0F
+Text                           : #9CA3AF
+Link                           : #E5E7EB
+Link hover                     : #FF6B00
+Divider                        : #1F2933
+
+
+[ TYPOGRAPHY ]
+-------------
+Heading (H1–H3)               : Bold
+Font recommendation           : Inter / Satoshi / Space Grotesk
+Body text                     : Regular
+Text color                     : #111111
+Letter spacing (optional)     : Slight (+1–2%)
+
+
+[ FINAL NOTES ]
+-------------
+- Style                        : Modern Gradient Streetwear UI
+- Not minimalist, not alay
+- Standard e-commerce structure
+- Streetwear character comes from contrast, spacing, and photography
+- Design is scalable & production-ready
