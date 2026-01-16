@@ -30,16 +30,13 @@ class CustomerOrderController extends Controller
             ->latest();
 
         // Filter by status
-        if ($request->has('status')) {
+        if ($request->has('status') && $request->status !== 'all') {
             $query->where('order_status', $request->status);
         }
 
         $orders = $query->paginate(10);
 
-        return response()->json([
-            'success' => true,
-            'data' => $orders,
-        ]);
+        return view('customer.orders.index', compact('orders'));
     }
 
     /**
@@ -178,10 +175,7 @@ class CustomerOrderController extends Controller
             ->where('user_id', auth()->id())
             ->findOrFail($id);
 
-        return response()->json([
-            'success' => true,
-            'data' => $order,
-        ]);
+        return view('customer.orders.show', compact('order'));
     }
 
     /**

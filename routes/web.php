@@ -40,8 +40,7 @@ Route::post('/logout', [WebAuthController::class, 'logout'])->name('logout');
 
 use App\Http\Controllers\WebCartController;
 use App\Http\Controllers\WebWishlistController;
-
-
+use App\Http\Controllers\WebAddressController;
 use App\Http\Controllers\WebCheckoutController;
 
 
@@ -57,6 +56,13 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('/checkout', [WebCheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout', [WebCheckoutController::class, 'store'])->name('checkout.store');
+    Route::get('/checkout/success/{transaction}', [WebCheckoutController::class, 'success'])->name('checkout.success');
+});
+
+// Customer Order Routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/orders', [\App\Http\Controllers\Customer\CustomerOrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{id}', [\App\Http\Controllers\Customer\CustomerOrderController::class, 'show'])->name('orders.show');
 });
 
 // Profile & Wishlist Routes (Placeholders)
@@ -69,10 +75,23 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', function () {
         $user = \Illuminate\Support\Facades\Auth::user();
         $orders = \App\Models\Transaction::where('user_id', $user->id)->latest()->take(3)->get();
-        return view('customer.profile', compact('user', 'orders'));
+        $primaryAddress = \App\Models\Address::where('user_id', $user->id)->where('is_primary', true)->first();
+        return view('customer.profile', compact('user', 'orders', 'primaryAddress'));
     })->name('profile.show');
 
     Route::put('/profile', [WebAuthController::class, 'updateProfile'])->name('profile.update');
+
+    // Customer Settings Routes
+    Route::get('/settings', [\App\Http\Controllers\Customer\CustomerSettingsController::class, 'index'])->name('settings.index');
+    Route::post('/settings/password', [\App\Http\Controllers\Customer\CustomerSettingsController::class, 'updatePassword'])->name('settings.updatePassword');
+    Route::post('/settings/preferences', [\App\Http\Controllers\Customer\CustomerSettingsController::class, 'updatePreferences'])->name('settings.updatePreferences');
+
+    // Address Routes
+    Route::get('/address', [WebAddressController::class, 'index'])->name('address.index');
+    Route::post('/address', [WebAddressController::class, 'store'])->name('address.store');
+    Route::put('/address/{id}', [WebAddressController::class, 'update'])->name('address.update');
+    Route::delete('/address/{id}', [WebAddressController::class, 'destroy'])->name('address.destroy');
+    Route::post('/address/{id}/primary', [WebAddressController::class, 'setPrimary'])->name('address.setPrimary');
 });
 
 // Dashboard Routes

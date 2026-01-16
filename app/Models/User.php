@@ -24,6 +24,9 @@ class User extends Authenticatable
         'phone',
         'address',
         'is_active',
+        'email_notifications',
+        'order_updates',
+        'newsletter',
     ];
 
     /**
@@ -45,6 +48,9 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'is_active' => 'boolean',
+        'email_notifications' => 'boolean',
+        'order_updates' => 'boolean',
+        'newsletter' => 'boolean',
     ];
 
     /**

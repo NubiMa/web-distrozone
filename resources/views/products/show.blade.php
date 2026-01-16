@@ -65,14 +65,14 @@
                     </div>
 
                     <!-- Quantity & Add to Cart -->
-                    <div class="flex gap-4">
+                    <div class="flex gap-4" x-data="{ qty: 1 }">
                         <div class="w-24 border border-border flex items-center">
-                            <button
+                            <button type="button" @click="qty > 1 ? qty-- : null"
                                 class="w-8 h-full flex items-center justify-center text-gray-500 hover:text-primary transition-colors hover:bg-gray-100">-</button>
-                            <input type="text" value="1"
+                            <input type="text" x-model="qty"
                                 class="w-full h-full text-center border-none p-0 focus:ring-0 text-sm font-bold"
                                 readonly>
-                            <button
+                            <button type="button" @click="qty < {{ $product->stock }} ? qty++ : null"
                                 class="w-8 h-full flex items-center justify-center text-gray-500 hover:text-primary transition-colors hover:bg-gray-100">+</button>
                         </div>
 
@@ -80,6 +80,7 @@
                             <!-- Add to Cart Form -->
                             <form action="{{ route('cart.add', $product->id) }}" method="POST" class="flex-1">
                                 @csrf
+                                <input type="hidden" name="quantity" :value="qty">
                                 <button type="submit"
                                     class="w-full bg-gradient-primary text-white font-bold tracking-wide uppercase py-4 hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-accent/20"
                                     {{ $product->stock <= 0 ? 'disabled' : '' }}>

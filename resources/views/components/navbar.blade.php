@@ -16,7 +16,7 @@
                 <a href="{{ url('/') }}"
                     class="text-gray-300 hover:text-accent transition-colors text-sm font-medium">BERANDA</a>
                 <a href="{{ url('/products') }}"
-                    class="text-gray-300 hover:text-accent transition-colors text-sm font-medium">KATALOG</a>
+                    class="text-gray-300 hover:text-accent transition-colors text-sm font-medium">BELANJA</a>
                 <a href="{{ url('/about') }}"
                     class="text-gray-300 hover:text-accent transition-colors text-sm font-medium">TENTANG KAMI</a>
 
