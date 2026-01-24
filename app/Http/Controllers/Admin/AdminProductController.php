@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class AdminProductController extends Controller
 {
@@ -14,40 +17,42 @@ class AdminProductController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Product::query();
+        $query = Product::with('variants');
 
         // Search
         if ($request->has('search') && $request->search != '') {
-            $query->search($request->search);
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                  ->orWhere('brand', 'LIKE', "%{$search}%");
+            });
         }
 
-        // Filters
+        // Filter by brand
         if ($request->has('brand') && $request->brand != '') {
-            $query->filterByBrand($request->brand);
+            $query->where('brand', $request->brand);
         }
 
-        if ($request->has('size') && $request->size != '') {
-            $query->filterBySize($request->size);
-        }
-
-        if ($request->has('color') && $request->color != '') {
-            $query->filterByColor($request->color);
-        }
-
+        // Filter by type
         if ($request->has('type') && $request->type != '') {
-            $query->filterByType($request->type);
+            $query->where('type', $request->type);
         }
 
-        if ($request->has('in_stock') && $request->in_stock) {
-            $query->inStock();
-        }
+        $products = $query->latest()->paginate(15);
 
-        $products = $query->latest()->paginate(20);
+        // Get unique brands and types for filters
+        $brands = Product::distinct()->pluck('brand');
+        $types = Product::distinct()->pluck('type');
 
-        return response()->json([
-            'success' => true,
-            'data' => $products,
-        ]);
+        return view('admin.products.index', compact('products', 'brands', 'types'));
+    }
+
+    /**
+     * Show create form
+     */
+    public function create()
+    {
+        return view('admin.products.create');
     }
 
     /**
@@ -56,50 +61,74 @@ class AdminProductController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'name' => 'required|string|max:255',
             'brand' => 'required|string|max:255',
             'type' => 'required|in:lengan panjang,lengan pendek',
-            'color' => 'required|string|max:255',
-            'size' => 'required|in:XS,S,M,L,XL,2XL,3XL,4XL,5XL',
-            'selling_price' => 'required|numeric|min:0',
-            'cost_price' => 'required|numeric|min:0',
-            'stock' => 'required|integer|min:0',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'description' => 'nullable|string',
+            'base_price' => 'required|numeric|min:0',
+            'photo' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            
+            // Variants
+            'variants' => 'required|array|min:1',
+            'variants.*.color' => 'required|string|max:50',
+            'variants.*.size' => 'required|in:XS,S,M,L,XL,2XL,3XL,4XL,5XL',
+            'variants.*.price' => 'required|numeric|min:0',
+            'variants.*.stock' => 'required|integer|min:0',
         ]);
 
         try {
+            DB::beginTransaction();
+
             // Handle photo upload
-            if ($request->hasFile('photo')) {
-                $validated['photo'] = $request->file('photo')->store('products', 'public');
+            $photoPath = $request->file('photo')->store('products', 'public');
+
+            // Create product
+            $product = Product::create([
+                'name' => $validated['name'],
+                'slug' => Str::slug($validated['name']),
+                'brand' => $validated['brand'],
+                'type' => $validated['type'],
+                'description' => $validated['description'] ?? null,
+                'base_price' => $validated['base_price'],
+                'photo' => $photoPath,
+                'is_active' => true,
+            ]);
+
+            // Create variants
+            foreach ($validated['variants'] as $variantData) {
+                ProductVariant::create([
+                    'product_id' => $product->id,
+                    'sku' => ProductVariant::generateSKU($product->id, $variantData['color'], $variantData['size']),
+                    'color' => $variantData['color'],
+                    'size' => $variantData['size'],
+                    'price' => $variantData['price'],
+                    'stock' => $variantData['stock'],
+                ]);
             }
 
-            $product = Product::create($validated);
+            DB::commit();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Product created successfully',
-                'data' => $product,
-            ], 201);
+            return redirect()->route('admin.products.index')->with('success', 'Produk berhasil ditambahkan');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to create product: ' . $e->getMessage(),
-            ], 500);
+            DB::rollBack();
+            
+            // Delete uploaded photo if exists
+            if (isset($photoPath)) {
+                Storage::disk('public')->delete($photoPath);
+            }
+            
+            return redirect()->back()->withInput()->withErrors(['error' => 'Gagal menambahkan produk: ' . $e->getMessage()]);
         }
     }
 
     /**
-     * Display the specified product
+     * Show edit form
      */
-    public function show($id)
+    public function edit($id)
     {
-        $product = Product::findOrFail($id);
-
-        return response()->json([
-            'success' => true,
-            'data' => $product,
-        ]);
+        $product = Product::with('variants')->findOrFail($id);
+        return view('admin.products.edit', compact('product'));
     }
 
     /**
@@ -110,41 +139,89 @@ class AdminProductController extends Controller
         $product = Product::findOrFail($id);
 
         $validated = $request->validate([
+            'name' => 'required|string|max:255',
             'brand' => 'required|string|max:255',
             'type' => 'required|in:lengan panjang,lengan pendek',
-            'color' => 'required|string|max:255',
-            'size' => 'required|in:XS,S,M,L,XL,2XL,3XL,4XL,5XL',
-            'selling_price' => 'required|numeric|min:0',
-            'cost_price' => 'required|numeric|min:0',
-            'stock' => 'required|integer|min:0',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'description' => 'nullable|string',
+            'base_price' => 'required|numeric|min:0',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'is_active' => 'nullable|boolean',
+            
+            // Variants
+            'variants' => 'required|array|min:1',
+            'variants.*.id' => 'nullable|exists:product_variants,id',
+            'variants.*.color' => 'required|string|max:50',
+            'variants.*.size' => 'required|in:XS,S,M,L,XL,2XL,3XL,4XL,5XL',
+            'variants.*.price' => 'required|numeric|min:0',
+            'variants.*.stock' => 'required|integer|min:0',
         ]);
 
         try {
+            DB::beginTransaction();
+
             // Handle photo upload
+            $photoPath = $product->photo;
             if ($request->hasFile('photo')) {
                 // Delete old photo
                 if ($product->photo) {
                     Storage::disk('public')->delete($product->photo);
                 }
-                $validated['photo'] = $request->file('photo')->store('products', 'public');
+                $photoPath = $request->file('photo')->store('products', 'public');
             }
 
-            $product->update($validated);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Product updated successfully',
-                'data' => $product,
+            // Update product
+            $product->update([
+                'name' => $validated['name'],
+                'slug' => Str::slug($validated['name']),
+                'brand' => $validated['brand'],
+                'type' => $validated['type'],
+                'description' => $validated['description'] ?? null,
+                'base_price' => $validated['base_price'],
+                'photo' => $photoPath,
+                'is_active' => $validated['is_active'] ?? $product->is_active,
             ]);
 
+            // Track existing variant IDs
+            $existingVariantIds = [];
+
+            // Update or create variants
+            foreach ($validated['variants'] as $variantData) {
+                if (isset($variantData['id'])) {
+                    // Update existing variant
+                    $variant = ProductVariant::findOrFail($variantData['id']);
+                    $variant->update([
+                        'color' => $variantData['color'],
+                        'size' => $variantData['size'],
+                        'price' => $variantData['price'],
+                        'stock' => $variantData['stock'],
+                        'sku' => ProductVariant::generateSKU($product->id, $variantData['color'], $variantData['size']),
+                    ]);
+                    $existingVariantIds[] = $variant->id;
+                } else {
+                    // Create new variant
+                    $newVariant = ProductVariant::create([
+                        'product_id' => $product->id,
+                        'sku' => ProductVariant::generateSKU($product->id, $variantData['color'], $variantData['size']),
+                        'color' => $variantData['color'],
+                        'size' => $variantData['size'],
+                        'price' => $variantData['price'],
+                        'stock' => $variantData['stock'],
+                    ]);
+                    $existingVariantIds[] = $newVariant->id;
+                }
+            }
+
+            // Delete variants that are not in the update
+            $product->variants()->whereNotIn('id', $existingVariantIds)->delete();
+
+            DB::commit();
+
+            return redirect()->route('admin.products.index')->with('success', 'Produk berhasil diupdate');
+
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update product: ' . $e->getMessage(),
-            ], 500);
+            DB::rollBack();
+            
+            return redirect()->back()->withInput()->withErrors(['error' => 'Gagal mengupdate produk: ' . $e->getMessage()]);
         }
     }
 
@@ -161,37 +238,13 @@ class AdminProductController extends Controller
                 Storage::disk('public')->delete($product->photo);
             }
 
+            // Delete product (will cascade delete variants)
             $product->delete();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Product deleted successfully',
-            ]);
+            return redirect()->route('admin.products.index')->with('success', 'Produk berhasil dihapus');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to delete product: ' . $e->getMessage(),
-            ], 500);
+            return redirect()->back()->withErrors(['error' => 'Gagal menghapus produk: ' . $e->getMessage()]);
         }
-    }
-
-    /**
-     * Get product statistics
-     */
-    public function statistics()
-    {
-        $stats = [
-            'total_products' => Product::count(),
-            'active_products' => Product::active()->count(),
-            'in_stock_products' => Product::inStock()->count(),
-            'out_of_stock_products' => Product::where('stock', 0)->count(),
-            'total_stock_value' => Product::sum(\DB::raw('cost_price * stock')),
-        ];
-
-        return response()->json([
-            'success' => true,
-            'data' => $stats,
-        ]);
     }
 }

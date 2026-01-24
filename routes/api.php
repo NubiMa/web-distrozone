@@ -93,7 +93,7 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
 // KASIR ROUTES
 // ========================================
 
-Route::middleware(['auth:sanctum', 'kasir'])->prefix('kasir')->group(function () {
+Route::middleware(['auth:sanctum,web', 'kasir'])->prefix('kasir')->group(function () {
     
     // Product Viewing (Read Only)
     Route::get('products', [KasirProductController::class, 'index']);

@@ -132,16 +132,17 @@
                                 <div class="p-6 flex items-center gap-4">
                                     <div
                                         class="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 border border-gray-100">
-                                        <img src="{{ $detail->product->photo ? Storage::url($detail->product->photo) : 'https://placehold.co/100x100/F5F5F5/999999?text=No+Image' }}"
+                                        <img src="{{ $detail->productVariant->photo ?? $detail->productVariant->product->photo ? Storage::url($detail->productVariant->photo ?? $detail->productVariant->product->photo) : 'https://placehold.co/100x100/F5F5F5/999999?text=No+Image' }}"
                                             class="w-full h-full object-cover">
                                     </div>
                                     <div class="flex-1">
                                         <p class="text-[10px] text-accent font-bold uppercase tracking-wider mb-1">
-                                            {{ $detail->product->brand }}</p>
+                                            {{ $detail->productVariant->product->brand ?? '' }}</p>
                                         <h4 class="font-bold text-primary text-sm mb-1">
-                                            {{ $detail->product->product_name ?? 'Product Name' }}</h4>
-                                        <p class="text-gray-500 text-[10px]">Size: {{ $detail->product->size }} •
-                                            Color: {{ $detail->product->color }}</p>
+                                            {{ $detail->productVariant->product->name ?? 'Product Name' }}</h4>
+                                        <p class="text-gray-500 text-[10px]">Size: {{ $detail->productVariant->size }}
+                                            •
+                                            Color: {{ $detail->productVariant->color }}</p>
                                     </div>
                                     <div class="text-right">
                                         <p class="text-[10px] text-gray-500 mb-1">Qty: {{ $detail->quantity }}</p>

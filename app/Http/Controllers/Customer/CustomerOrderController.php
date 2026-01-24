@@ -25,7 +25,7 @@ class CustomerOrderController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Transaction::with(['details.product'])
+        $query = Transaction::with(['details.productVariant.product'])
             ->where('user_id', auth()->id())
             ->latest();
 
@@ -143,7 +143,7 @@ class CustomerOrderController extends Controller
 
             DB::commit();
 
-            $transaction->load('details.product');
+            $transaction->load('details.productVariant.product');
 
             return response()->json([
                 'success' => true,
@@ -171,7 +171,7 @@ class CustomerOrderController extends Controller
      */
     public function show($id)
     {
-        $order = Transaction::with(['details.product', 'cashier', 'verifier'])
+        $order = Transaction::with(['details.productVariant.product', 'cashier', 'verifier'])
             ->where('user_id', auth()->id())
             ->findOrFail($id);
 

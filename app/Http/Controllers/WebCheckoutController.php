@@ -13,6 +13,7 @@ use App\Services\ShippingService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class WebCheckoutController extends Controller
 {
@@ -29,7 +30,7 @@ class WebCheckoutController extends Controller
         
         // Get cart items
         $cartItems = CartItem::where('user_id', $user->id)
-            ->with('product')
+            ->with('productVariant.product')
             ->get();
         
         if ($cartItems->isEmpty()) {
@@ -53,7 +54,7 @@ class WebCheckoutController extends Controller
 
         // Calculate totals
         $subtotal = $cartItems->sum(function ($item) {
-            return $item->product->selling_price * $item->quantity;
+            return $item->productVariant->price * $item->quantity;
         });
         $totalQuantity = $cartItems->sum('quantity');
         
@@ -76,7 +77,7 @@ class WebCheckoutController extends Controller
 
         // Get cart items
         $cartItems = CartItem::where('user_id', $user->id)
-            ->with('product')
+            ->with('productVariant.product')
             ->get();
         
         if ($cartItems->isEmpty()) {
@@ -93,7 +94,7 @@ class WebCheckoutController extends Controller
             $totalQuantity = 0;
             
             foreach ($cartItems as $item) {
-                $subtotal += $item->product->selling_price * $item->quantity;
+                $subtotal += $item->productVariant->price * $item->quantity;
                 $totalQuantity += $item->quantity;
             }
 
@@ -140,21 +141,21 @@ class WebCheckoutController extends Controller
             // Create transaction details and update stock
             foreach ($cartItems as $item) {
                 // Check stock
-                if ($item->product->stock < $item->quantity) {
-                    throw new \Exception("Stok tidak mencukupi untuk produk: " . $item->product->brand);
+                if ($item->productVariant->stock < $item->quantity) {
+                    throw new \Exception("Stok tidak mencukupi untuk produk: " . $item->productVariant->product->name);
                 }
 
                 TransactionDetail::create([
                     'transaction_id' => $transaction->id,
-                    'product_id' => $item->product_id,
+                    'product_variant_id' => $item->product_variant_id,
                     'quantity' => $item->quantity,
-                    'cost_price' => $item->product->cost_price,
-                    'price' => $item->product->selling_price,
-                    'subtotal' => $item->product->selling_price * $item->quantity,
+                    'cost_price' => $item->productVariant->cost_price,
+                    'price' => $item->productVariant->price,
+                    'subtotal' => $item->productVariant->price * $item->quantity,
                 ]);
 
                 // Decrease stock
-                $item->product->decrement('stock', $item->quantity);
+                $item->productVariant->decrement('stock', $item->quantity);
             }
 
             // Clear cart
@@ -172,10 +173,21 @@ class WebCheckoutController extends Controller
 
     public function success($transactionId)
     {
-        $transaction = Transaction::with('details.product')
+        $transaction = Transaction::with('details.productVariant.product')
             ->where('user_id', Auth::id())
             ->findOrFail($transactionId);
 
         return view('checkout.success', compact('transaction'));
+    }
+
+    public function downloadReceipt($transactionId)
+    {
+        $transaction = Transaction::with('details.productVariant.product')
+            ->where('user_id', Auth::id())
+            ->findOrFail($transactionId);
+
+        $pdf = Pdf::loadView('checkout.receipt-pdf', compact('transaction'));
+        
+        return $pdf->download('Receipt-' . $transaction->transaction_code . '.pdf');
     }
 }

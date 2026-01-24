@@ -162,13 +162,18 @@ class Transaction extends Model
         $this->payment_status = 'verified';
         $this->verified_at = now();
         $this->verified_by = $verifiedBy;
+        $this->cashier_id = $verifiedBy; // Assign to kasir who verified
         $this->save();
     }
 
-    public function markAsRejected()
+    public function markAsRejected($verifierId = null)
     {
         $this->payment_status = 'rejected';
         $this->order_status = 'cancelled';
+        if ($verifierId) {
+            $this->verified_at = now();
+            $this->verified_by = $verifierId;
+        }
         $this->save();
     }
 

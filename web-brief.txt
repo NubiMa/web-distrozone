@@ -1,0 +1,47 @@
+============================================================
+> DISTROZONE :: WEBSITE APPLICATION BRIEF
+============================================================
+
+[OVERVIEW]
+Web-based application for online product display and sales
+Integrated with offline cashier system using centralized DB
+
+[USERS]
+- Customer
+- Customer Service
+
+[CUSTOMER FEATURES]
+- View product stock list
+- View product details (model, color, size, price)
+
+[CUSTOMER SERVICE]
+- Active during store operational hours
+
+[OPERATIONAL HOURS]
+- Open  : 10.00 - 17.00
+- Active: Everyday
+
+[TRANSACTION RULES]
+- Payment via bank transfer to owner account
+- Orders processed after cashier verification (ACC)
+- Shipping after payment confirmation
+- Shipping cost paid by customer
+
+[SHIPPING POLICY]
+- 1 Kg = Max 3 T-shirts
+- < 3 pcs still counted as 1 Kg
+- Delivery only within Java Island
+
+[SHIPPING RATES / KG]
+- Jakarta                    : Rp 24.000
+- Depok                      : Rp 24.000
+- Bekasi                     : Rp 25.000
+- Tangerang                  : Rp 25.000
+- Bogor                      : Rp 27.000
+- West Java (All Areas)      : Rp 31.000
+- Central Java (All Areas)   : Rp 39.000
+- East Java (All Areas)      : Rp 47.000
+
+[INTEGRATION]
+- Centralized database
+- Synced with Desktop (Offline) Application

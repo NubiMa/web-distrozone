@@ -16,24 +16,51 @@ class AdminReportController extends Controller
     }
 
     /**
-     * Get financial report for all cashiers
+     * Display admin financial reports (all cashiers)
      */
-    public function financial(Request $request)
+    public function index(Request $request)
     {
-        $validated = $request->validate([
-            'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
-        ]);
+        $startDate = $request->input('start_date', now()->startOfMonth()->format('Y-m-d'));
+        $endDate = $request->input('end_date', now()->format('Y-m-d'));
 
-        $report = $this->reportService->getFinancialReport(
-            $validated['start_date'] ?? null,
-            $validated['end_date'] ?? null
-        );
+        // Get financial report for ALL cashiers (no cashier_id filter)
+        $report = $this->reportService->getFinancialReport($startDate, $endDate, null);
+        
+        // Get daily sales for charts
+        $dailySales = $this->reportService->getDailySales($startDate, $endDate, null);
 
-        return response()->json([
-            'success' => true,
-            'data' => $report,
-        ]);
+        // Get recent transactions (all cashiers)
+        $transactions = \App\Models\Transaction::with(['details.productVariant.product', 'user', 'cashier'])
+            ->whereBetween('created_at', [$startDate, $endDate . ' 23:59:59'])
+            ->latest()
+            ->paginate(15);
+
+        // Get cashier performance
+        $cashierPerformance = $this->reportService->getCashierPerformance($startDate, $endDate);
+
+        // Calculate additional metrics
+        $todayRevenue = \App\Models\Transaction::verified()
+            ->whereDate('verified_at', today())
+            ->sum('total');
+        
+        $avgOrderValue = $report['summary']['total_revenue'] > 0 && $report['summary']['total_transactions'] > 0
+            ? $report['summary']['total_revenue'] / $report['summary']['total_transactions']
+            : 0;
+
+        // Get all cashiers for filter
+        $cashiers = \App\Models\User::where('role', 'kasir')->get();
+
+        return view('admin.reports', compact(
+            'report',
+            'dailySales',
+            'transactions',
+            'cashierPerformance',
+            'startDate',
+            'endDate',
+            'todayRevenue',
+            'avgOrderValue',
+            'cashiers'
+        ));
     }
 
     /**

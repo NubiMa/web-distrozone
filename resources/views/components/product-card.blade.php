@@ -4,9 +4,14 @@
     class="group bg-white border border-border overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-accent/30 relative">
     <!-- Badges -->
     <div class="absolute top-2 left-2 z-10 flex flex-col gap-1">
-        @if ($product->stock <= 0)
+        @php
+            $isNew = $product->created_at->diffInDays(now()) < 7;
+            $totalStock = $product->total_stock; // Sum of all variant stocks
+        @endphp
+
+        @if ($totalStock <= 0)
             <span class="px-2 py-1 bg-gray-800 text-white text-[10px] uppercase font-bold tracking-wider">HABIS</span>
-        @elseif($product->created_at->diffInDays(now()) < 7)
+        @elseif($isNew)
             <span class="px-2 py-1 bg-accent text-white text-[10px] uppercase font-bold tracking-wider">BARU</span>
         @endif
     </div>
@@ -38,7 +43,7 @@
                 </a>
             </h3>
             <p class="text-sm font-bold text-accent">
-                Rp {{ number_format($product->selling_price, 0, ',', '.') }}
+                {!! $product->price_range !!}
             </p>
         </div>
         <p class="text-xs text-text-muted mb-3">{{ $product->brand }} &bull; {{ $product->type }}</p>

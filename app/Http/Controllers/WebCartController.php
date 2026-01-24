@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\CartItem;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,21 +14,25 @@ class WebCartController extends Controller
     public function index()
     {
         $cartItems = CartItem::where('user_id', Auth::id())
-            ->with('product')
+            ->with('productVariant.product')
             ->get();
 
         // Transform to match the old session structure for view compatibility
         $cart = [];
         $total = 0;
         foreach ($cartItems as $item) {
-            $cart[$item->product_id] = [
-                'id' => $item->product->id,
-                'name' => $item->product->name,
+            $variant = $item->productVariant;
+            $cart[$variant->id] = [
+                'id' => $variant->product->id,
+                'variant_id' => $variant->id,
+                'name' => $variant->product->name,
+                'size' => $variant->size,
+                'color' => $variant->color,
                 'quantity' => $item->quantity,
-                'price' => $item->product->selling_price,
-                'image' => $item->product->image
+                'price' => $variant->price,
+                'image' => $variant->photo ?? $variant->product->photo
             ];
-            $total += $item->product->selling_price * $item->quantity;
+            $total += $variant->price * $item->quantity;
         }
 
         return view('cart.index', compact('cart', 'total'));
@@ -38,9 +43,21 @@ class WebCartController extends Controller
     {
         $product = Product::findOrFail($id);
         $quantity = $request->input('quantity', 1);
+        $variantId = $request->input('variant_id');
+        
+        // Validate variant exists and has stock
+        if (!$variantId) {
+            return redirect()->back()->with('error', 'Please select a size and color.');
+        }
+        
+        $variant = ProductVariant::findOrFail($variantId);
+        
+        if ($variant->stock < $quantity) {
+            return redirect()->back()->with('error', 'Insufficient stock available.');
+        }
 
         $cartItem = CartItem::where('user_id', Auth::id())
-            ->where('product_id', $id)
+            ->where('product_variant_id', $variantId)
             ->first();
 
         if ($cartItem) {
@@ -49,7 +66,7 @@ class WebCartController extends Controller
         } else {
             CartItem::create([
                 'user_id' => Auth::id(),
-                'product_id' => $id,
+                'product_variant_id' => $variantId,
                 'quantity' => $quantity
             ]);
         }
@@ -62,7 +79,7 @@ class WebCartController extends Controller
     {
         if ($request->id && $request->quantity) {
             $cartItem = CartItem::where('user_id', Auth::id())
-                ->where('product_id', $request->id)
+                ->where('product_variant_id', $request->id)
                 ->first();
             
             if ($cartItem) {
@@ -79,7 +96,7 @@ class WebCartController extends Controller
     {
         if ($request->id) {
             CartItem::where('user_id', Auth::id())
-                ->where('product_id', $request->id)
+                ->where('product_variant_id', $request->id)
                 ->delete();
             
             return redirect()->back()->with('success', 'Product removed successfully');

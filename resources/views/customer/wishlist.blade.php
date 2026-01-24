@@ -51,8 +51,8 @@
                             <!-- Image -->
                             <div
                                 class="aspect-square bg-gray-50 rounded-lg overflow-hidden mb-4 flex items-center justify-center relative">
-                                @if ($product->image)
-                                    <img src="{{ Storage::url($product->image) }}" alt="{{ $product->name }}"
+                                @if ($product->photo)
+                                    <img src="{{ Storage::url($product->photo) }}" alt="{{ $product->name }}"
                                         class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500">
                                 @else
                                     <div class="flex flex-col items-center justify-center text-gray-300">
@@ -66,7 +66,7 @@
 
                                 <!-- Stock Badge -->
                                 <div class="absolute bottom-2 left-2">
-                                    @if ($product->stock > 0)
+                                    @if ($product->total_stock > 0)
                                         <span
                                             class="bg-black/80 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider backdrop-blur-sm">In
                                             Stock</span>
@@ -81,21 +81,16 @@
                             <!-- Details -->
                             <div>
                                 <h3 class="font-bold text-gray-900 line-clamp-1 mb-1">{{ $product->name }}</h3>
-                                <p class="text-xs text-gray-500 mb-3">Size: {{ $product->size }} • Color:
-                                    {{ $product->color }}</p>
+                                <p class="text-xs text-gray-500 mb-3">{{ $product->brand }} • {{ $product->type }}</p>
 
                                 <div class="flex items-center justify-between mb-4">
-                                    <p class="font-bold text-accent text-lg">Rp
-                                        {{ number_format($product->selling_price, 0, ',', '.') }}</p>
+                                    <p class="font-bold text-accent text-lg">{!! $product->price_range !!}</p>
                                 </div>
 
-                                <form action="{{ route('cart.add', $product->id) }}" method="POST">
-                                    @csrf
-                                    <button type="submit"
-                                        class="w-full bg-accent hover:bg-accent-light text-white font-bold py-3 rounded-lg uppercase text-xs tracking-wider transition-all shadow-lg shadow-accent/20">
-                                        Tambah ke Keranjang
-                                    </button>
-                                </form>
+                                <a href="{{ url('/products/' . $product->id) }}"
+                                    class="block w-full bg-accent hover:bg-accent-light text-white font-bold py-3 rounded-lg uppercase text-xs tracking-wider transition-all shadow-lg shadow-accent/20 text-center">
+                                    Lihat Detail
+                                </a>
                             </div>
                         </div>
                     @endforeach

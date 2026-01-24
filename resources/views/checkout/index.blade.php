@@ -317,16 +317,17 @@
                                 @foreach ($cartItems as $item)
                                     <div class="flex gap-3">
                                         <div class="w-16 h-16 bg-gray-100 rounded flex-shrink-0 overflow-hidden">
-                                            <img src="{{ $item->product->photo ? Storage::url($item->product->photo) : 'https://placehold.co/100x100/F5F5F5/999999?text=No+Image' }}"
-                                                alt="{{ $item->product->brand }}" class="w-full h-full object-cover">
+                                            <img src="{{ $item->productVariant->photo ?? $item->productVariant->product->photo ? Storage::url($item->productVariant->photo ?? $item->productVariant->product->photo) : 'https://placehold.co/100x100/F5F5F5/999999?text=No+Image' }}"
+                                                alt="{{ $item->productVariant->product->name ?? 'Product' }}"
+                                                class="w-full h-full object-cover">
                                         </div>
                                         <div class="flex-1 min-w-0">
                                             <p class="font-bold text-sm text-gray-900 truncate">
-                                                {{ $item->product->brand }}</p>
-                                            <p class="text-xs text-gray-500">{{ $item->product->color }} •
-                                                {{ $item->product->size }}</p>
+                                                {{ $item->productVariant->product->name ?? 'Product' }}</p>
+                                            <p class="text-xs text-gray-500">{{ $item->productVariant->color }} •
+                                                {{ $item->productVariant->size }}</p>
                                             <p class="text-xs text-gray-600 font-medium">{{ $item->quantity }}x Rp
-                                                {{ number_format($item->product->selling_price, 0, ',', '.') }}</p>
+                                                {{ number_format($item->productVariant->price, 0, ',', '.') }}</p>
                                         </div>
                                     </div>
                                 @endforeach

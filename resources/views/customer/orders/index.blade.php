@@ -121,9 +121,9 @@
                                             @foreach ($order->details->take(3) as $detail)
                                                 <div
                                                     class="w-24 h-24 bg-gray-100 rounded-lg border border-gray-100 overflow-hidden flex-shrink-0 relative group">
-                                                    <img src="{{ $detail->product->photo ? Storage::url($detail->product->photo) : 'https://placehold.co/100x100/F5F5F5/999999?text=No+Image' }}"
+                                                    <img src="{{ $detail->productVariant->photo ?? $detail->productVariant->product->photo ? Storage::url($detail->productVariant->photo ?? $detail->productVariant->product->photo) : 'https://placehold.co/100x100/F5F5F5/999999?text=No+Image' }}"
                                                         class="w-full h-full object-cover"
-                                                        alt="{{ $detail->product->brand }}">
+                                                        alt="{{ $detail->productVariant->product->brand ?? 'Product' }}">
 
                                                     <!-- Tooltip on hover -->
                                                     <div

@@ -18,19 +18,41 @@ class AdminEmployeeController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Employee::with('user');
+        $query = User::kasir()->with('employee');
 
         // Search functionality
         if ($request->has('search') && $request->search != '') {
-            $query->search($request->search);
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                  ->orWhere('email', 'LIKE', "%{$search}%")
+                  ->orWhereHas('employee', function($q2) use ($search) {
+                      $q2->where('nik', 'LIKE', "%{$search}%")
+                         ->orWhere('phone', 'LIKE', "%{$search}%");
+                  });
+            });
         }
 
-        $employees = $query->latest()->paginate(15);
+        $staff = $query->latest()->paginate(15);
 
-        return response()->json([
-            'success' => true,
-            'data' => $employees,
-        ]);
+        return view('admin.staff.index', compact('staff'));
+    }
+
+    /**
+     * Show create form
+     */
+    public function create()
+    {
+        return view('admin.staff.create');
+    }
+
+    /**
+     * Show edit form
+     */
+    public function edit($id)
+    {
+        $staff = User::kasir()->with('employee')->findOrFail($id);
+        return view('admin.staff.edit', compact('staff'));
     }
 
     /**
@@ -80,19 +102,12 @@ class AdminEmployeeController extends Controller
 
             DB::commit();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Employee created successfully',
-                'data' => $employee->load('user'),
-            ], 201);
+            return redirect()->route('admin.staff.index')->with('success', 'Staff berhasil ditambahkan');
 
         } catch (\Exception $e) {
             DB::rollBack();
             
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to create employee: ' . $e->getMessage(),
-            ], 500);
+            return redirect()->back()->withInput()->withErrors(['error' => 'Gagal menambahkan staff: ' . $e->getMessage()]);
         }
     }
 
@@ -114,13 +129,14 @@ class AdminEmployeeController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $employee = Employee::findOrFail($id);
+        $user = User::kasir()->findOrFail($id);
+        $employee = $user->employee;
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($employee->user_id)],
+            'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($id)],
             'password' => 'nullable|string|min:6',
-            'nik' => ['required', 'string', 'size:16', Rule::unique('employees', 'nik')->ignore($id)],
+            'nik' => ['required', 'string', 'size:16', Rule::unique('employees', 'nik')->ignore($employee->id)],
             'phone' => 'required|string|max:20',
             'address' => 'required|string',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
@@ -146,15 +162,16 @@ class AdminEmployeeController extends Controller
                 $userData['is_active'] = $validated['is_active'];
             }
 
-            $employee->user->update($userData);
+            $user->update($userData);
 
             // Handle photo upload
+            $photoPath = $employee->photo;
             if ($request->hasFile('photo')) {
                 // Delete old photo
                 if ($employee->photo) {
                     Storage::disk('public')->delete($employee->photo);
                 }
-                $validated['photo'] = $request->file('photo')->store('employees', 'public');
+                $photoPath = $request->file('photo')->store('employees', 'public');
             }
 
             // Update employee record
@@ -163,24 +180,17 @@ class AdminEmployeeController extends Controller
                 'name' => $validated['name'],
                 'address' => $validated['address'],
                 'phone' => $validated['phone'],
-                'photo' => $validated['photo'] ?? $employee->photo,
+                'photo' => $photoPath,
             ]);
 
             DB::commit();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Employee updated successfully',
-                'data' => $employee->load('user'),
-            ]);
+            return redirect()->route('admin.staff.index')->with('success', 'Staff berhasil diupdate');
 
         } catch (\Exception $e) {
             DB::rollBack();
             
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update employee: ' . $e->getMessage(),
-            ], 500);
+            return redirect()->back()->withInput()->withErrors(['error' => 'Gagal mengupdate staff: ' . $e->getMessage()]);
         }
     }
 
@@ -190,26 +200,21 @@ class AdminEmployeeController extends Controller
     public function destroy($id)
     {
         try {
-            $employee = Employee::findOrFail($id);
+            $user = User::kasir()->findOrFail($id);
+            $employee = $user->employee;
 
             // Delete photo if exists
-            if ($employee->photo) {
+            if ($employee && $employee->photo) {
                 Storage::disk('public')->delete($employee->photo);
             }
 
             // Delete user account (will cascade delete employee)
-            $employee->user->delete();
+            $user->delete();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Employee deleted successfully',
-            ]);
+            return redirect()->route('admin.staff.index')->with('success', 'Staff berhasil dihapus');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to delete employee: ' . $e->getMessage(),
-            ], 500);
+            return redirect()->back()->withErrors(['error' => 'Gagal menghapus staff: ' . $e->getMessage()]);
         }
     }
 }

@@ -1,39 +1,38 @@
-<nav x-data="{ open: false, scrolled: false, profileOpen: false }" @scroll.window="scrolled = (window.pageYOffset > 20)"
-    :class="{ 'bg-[#0f0f0f]/95 backdrop-blur-md shadow-lg': scrolled, 'bg-[#0f0f0f]': !scrolled }"
-    class="fixed w-full z-50 transition-all duration-300 border-b border-white/5">
+<nav x-data="{ open: false, profileOpen: false }" class="fixed w-full z-50 bg-[#0f0f0f] border-b border-white/5">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-20 items-center">
-
             <!-- Logo -->
             <div class="flex-shrink-0 flex items-center">
-                <a href="{{ url('/kasir/dashboard') }}"
+                <a href="{{ url('/admin/dashboard') }}"
                     class="text-2xl font-bold font-display text-white tracking-tighter">
                     DISTRO<span class="text-gradient">ZONE</span>.
                 </a>
-                <span class="ml-3 px-3 py-1 bg-orange-600 text-white text-xs font-bold rounded-full">KASIR</span>
+                <span
+                    class="ml-3 px-3 py-1 bg-gradient-to-r from-orange-600 to-orange-500 text-white text-xs font-bold rounded-full">ADMIN</span>
             </div>
 
             <!-- Desktop Menu -->
             <div class="hidden md:flex items-center space-x-8">
-                <a href="{{ url('/kasir/dashboard') }}"
+                <a href="{{ url('/admin/dashboard') }}"
                     class="text-gray-300 hover:text-accent transition-colors text-sm font-medium">DASHBOARD</a>
-                <a href="{{ route('kasir.inventory') }}"
-                    class="text-gray-300 hover:text-accent transition-colors text-sm font-medium">STOK PRODUK</a>
-                <a href="{{ url('/kasir/orders') }}"
-                    class="text-gray-300 hover:text-accent transition-colors text-sm font-medium">ONLINE ORDERS</a>
-                <a href="{{ url('/kasir/reports') }}"
+                <a href="{{ url('/admin/staff') }}"
+                    class="text-gray-300 hover:text-accent transition-colors text-sm font-medium">STAFF</a>
+                <a href="{{ url('/admin/products') }}"
+                    class="text-gray-300 hover:text-accent transition-colors text-sm font-medium">PRODUCTS</a>
+                <a href="{{ url('/admin/reports') }}"
                     class="text-gray-300 hover:text-accent transition-colors text-sm font-medium">REPORTS</a>
+                <a href="{{ url('/admin/settings') }}"
+                    class="text-gray-300 hover:text-accent transition-colors text-sm font-medium">SETTINGS</a>
             </div>
 
-            <!-- Right Section -->
-            <div class="hidden md:flex items-center space-x-6">
-                <!-- User Info & Profile Dropdown -->
+            <!-- User Dropdown -->
+            <div class="hidden md:flex items-center">
                 <div class="relative">
                     <button @click="profileOpen = !profileOpen"
                         class="flex items-center gap-3 text-gray-300 hover:text-white transition-colors focus:outline-none">
                         <div class="text-right">
                             <p class="text-sm font-medium text-white">{{ Auth::user()->name }}</p>
-                            <p class="text-xs text-gray-400">Kasir</p>
+                            <p class="text-xs text-gray-400">Administrator</p>
                         </div>
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -41,10 +40,10 @@
                         </svg>
                     </button>
 
-                    <!-- Dropdown Menu -->
+                    <!-- Dropdown -->
                     <div x-show="profileOpen" @click.away="profileOpen = false" x-transition
                         class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 border border-gray-200 z-50">
-                        <a href="/kasir/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <a href="/admin/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                             <svg class="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor"
                                 viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -87,26 +86,26 @@
     <!-- Mobile Menu -->
     <div x-show="open" x-cloak class="md:hidden bg-primary border-b border-white/10">
         <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            <a href="{{ url('/kasir/dashboard') }}"
+            <a href="{{ url('/admin/dashboard') }}"
                 class="block px-3 py-2 text-white hover:text-accent text-base font-medium">Dashboard</a>
-            <a href="{{ route('kasir.inventory') }}"
-                class="block px-3 py-2 text-gray-300 hover:text-white text-base font-medium">Stok Produk</a>
-            <a href="{{ url('/kasir/orders') }}"
-                class="block px-3 py-2 text-gray-300 hover:text-white text-base font-medium">Online Orders</a>
-            <a href="{{ url('/kasir/reports') }}"
+            <a href="{{ url('/admin/staff') }}"
+                class="block px-3 py-2 text-gray-300 hover:text-white text-base font-medium">Staff</a>
+            <a href="{{ url('/admin/products') }}"
+                class="block px-3 py-2 text-gray-300 hover:text-white text-base font-medium">Products</a>
+            <a href="{{ url('/admin/reports') }}"
                 class="block px-3 py-2 text-gray-300 hover:text-white text-base font-medium">Reports</a>
+            <a href="{{ url('/admin/settings') }}"
+                class="block px-3 py-2 text-gray-300 hover:text-white text-base font-medium">Settings</a>
             <div class="border-t border-white/10 mt-2 pt-2">
                 <div class="px-3 py-2 text-sm text-gray-400">
-                    {{ Auth::user()->name }} (Kasir)
+                    {{ Auth::user()->name }} (Admin)
                 </div>
-                <a href="/kasir/profile" class="block px-3 py-2 text-gray-300 hover:text-white text-base font-medium">
-                    Profile Settings
-                </a>
+                <a href="/admin/profile"
+                    class="block px-3 py-2 text-gray-300 hover:text-white text-base font-medium">Profile Settings</a>
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
-                    <button type="submit" class="block w-full text-left px-3 py-2 text-red-400 font-medium">
-                        Logout
-                    </button>
+                    <button type="submit"
+                        class="block w-full text-left px-3 py-2 text-red-400 font-medium">Logout</button>
                 </form>
             </div>
         </div>

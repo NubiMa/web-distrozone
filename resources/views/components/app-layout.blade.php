@@ -38,6 +38,11 @@
             {{ session('success') }}
         </div>
     @endif
+
+    <!-- Chat Widget (Everywhere except if explicitly hidden) -->
+    @unless (request()->routeIs('settings*'))
+        <x-chat-widget />
+    @endunless
 </body>
 
 </html>

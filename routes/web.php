@@ -32,8 +32,15 @@ Route::get('/products', function () {
 });
 
 Route::get('/products/{id}', function ($id) {
-    $product = \App\Models\Product::findOrFail($id);
-    return view('products.show', compact('product'));
+    $product = \App\Models\Product::with(['variants' => function($query) {
+        $query->where('stock', '>', 0)->where('is_active', true);
+    }])->findOrFail($id);
+    
+    // Get available sizes and colors from variants
+    $availableSizes = $product->variants->pluck('size')->unique()->sort()->values();
+    $availableColors = $product->variants->pluck('color')->unique()->values();
+    
+    return view('products.show', compact('product', 'availableSizes', 'availableColors'));
 });
 
 use App\Http\Controllers\WebAuthController;
@@ -64,6 +71,15 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/checkout', [WebCheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout', [WebCheckoutController::class, 'store'])->name('checkout.store');
     Route::get('/checkout/success/{transaction}', [WebCheckoutController::class, 'success'])->name('checkout.success');
+    Route::get('/checkout/receipt/{transaction}/download', [WebCheckoutController::class, 'downloadReceipt'])->name('checkout.receipt.download');
+});
+
+// Kasir JSON API routes (using web sessions)
+Route::middleware(['auth', 'kasir'])->prefix('kasir/api')->group(function () {
+    Route::get('/orders/pending', [App\Http\Controllers\Kasir\KasirTransactionController::class, 'pendingOrders']);
+    Route::post('/orders/{id}/verify', [App\Http\Controllers\Kasir\KasirTransactionController::class, 'verifyPayment']);
+    Route::get('/orders/{id}/verify', [App\Http\Controllers\Kasir\KasirTransactionController::class, 'verifyPage'])->name('orders.verify');
+    Route::get('/transactions', [App\Http\Controllers\Kasir\KasirTransactionController::class, 'index']);
 });
 
 // Customer Order Routes
@@ -101,6 +117,36 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/address/{id}/primary', [WebAddressController::class, 'setPrimary'])->name('address.setPrimary');
 });
 
+// ===================================
+// ADMIN ROUTES
+// ===================================
+Route::prefix('/admin')->middleware(['auth', 'admin'])->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\Admin\AdminDashboardController::class, 'index'])->name('admin.dashboard');
+    
+    // Staff Management
+    Route::get('/staff', [App\Http\Controllers\Admin\AdminEmployeeController::class, 'index'])->name('admin.staff.index');
+    Route::get('/staff/create', [App\Http\Controllers\Admin\AdminEmployeeController::class, 'create'])->name('admin.staff.create');
+    Route::post('/staff', [App\Http\Controllers\Admin\AdminEmployeeController::class, 'store'])->name('admin.staff.store');
+    Route::get('/staff/{id}/edit', [App\Http\Controllers\Admin\AdminEmployeeController::class, 'edit'])->name('admin.staff.edit');
+    Route::put('/staff/{id}', [App\Http\Controllers\Admin\AdminEmployeeController::class, 'update'])->name('admin.staff.update');
+    Route::delete('/staff/{id}', [App\Http\Controllers\Admin\AdminEmployeeController::class, 'destroy'])->name('admin.staff.destroy');
+    
+    // Product Management
+    Route::get('/products', [App\Http\Controllers\Admin\AdminProductController::class, 'index'])->name('admin.products.index');
+    Route::get('/products/create', [App\Http\Controllers\Admin\AdminProductController::class, 'create'])->name('admin.products.create');
+    Route::post('/products', [App\Http\Controllers\Admin\AdminProductController::class, 'store'])->name('admin.products.store');
+    Route::get('/products/{id}/edit', [App\Http\Controllers\Admin\AdminProductController::class, 'edit'])->name('admin.products.edit');
+    Route::put('/products/{id}', [App\Http\Controllers\Admin\AdminProductController::class, 'update'])->name('admin.products.update');
+    Route::delete('/products/{id}', [App\Http\Controllers\Admin\AdminProductController::class, 'destroy'])->name('admin.products.destroy');
+    
+    // Reports
+    Route::get('/reports', [App\Http\Controllers\Admin\AdminReportController::class, 'index'])->name('admin.reports');
+    
+    // Settings
+    Route::get('/settings', [App\Http\Controllers\Admin\AdminSettingsController::class, 'index'])->name('admin.settings');
+    Route::post('/settings', [App\Http\Controllers\Admin\AdminSettingsController::class, 'update'])->name('admin.settings.update');
+});
+
 // Dashboard Routes
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', function () {
@@ -121,21 +167,58 @@ Route::middleware(['auth'])->group(function () {
         return view('customer.dashboard', compact('activeOrder', 'recommendedProducts'));
     })->name('dashboard');
 
-    Route::get('/admin/dashboard', function () {
-        return view('admin.dashboard');
-    })->middleware('admin'); // We should add web-based middleware later if needed, mostly trusting role check in dashboard route for now simple case
+
 
     Route::get('/kasir/dashboard', function () {
-        return view('kasir.dashboard');
+        // Stats: Recent Sales (Verified transactions today)
+        $today = now()->startOfDay();
+        $endOfToday = now()->endOfDay();
+        
+        $todaysSales = \App\Models\Transaction::verified()
+            ->whereBetween('verified_at', [$today, $endOfToday])
+            ->sum('total');
+            
+        $todaysSalesCount = \App\Models\Transaction::verified()
+            ->whereBetween('verified_at', [$today, $endOfToday])
+            ->count();
+
+        // Stats: Comparison with yesterday
+        $yesterday = now()->subDay()->startOfDay();
+        $endOfYesterday = now()->subDay()->endOfDay();
+        $yesterdaysSales = \App\Models\Transaction::verified()
+            ->whereBetween('verified_at', [$yesterday, $endOfYesterday])
+            ->sum('total');
+
+        // Stats: Pending Verifications (Online pending)
+        $pendingVerifications = \App\Models\Transaction::online()->pending()->count();
+
+        // Stats: Items Sold Today
+        $itemsSold = \App\Models\TransactionDetail::whereHas('transaction', function($q) use ($today, $endOfToday) {
+            $q->verified()->whereBetween('verified_at', [$today, $endOfToday]);
+        })->sum('quantity');
+
+        // Recent Transactions
+        $recentTransactions = \App\Models\Transaction::with(['user', 'details.productVariant.product'])
+            ->latest()
+            ->take(5)
+            ->get();
+
+        return view('kasir.dashboard', compact(
+            'todaysSales', 
+            'todaysSalesCount',
+            'yesterdaysSales', 
+            'pendingVerifications', 
+            'itemsSold', 
+            'recentTransactions'
+        ));
     })->middleware('kasir');
 
-    Route::get('/kasir/orders', function () {
-        return view('kasir.orders');
-    })->middleware('kasir');
+    Route::get('/kasir/orders', [\App\Http\Controllers\Kasir\KasirTransactionController::class, 'ordersPage'])
+        ->middleware('kasir')
+        ->name('kasir.orders.index');
 
-    Route::get('/kasir/reports', function () {
-        return view('kasir.reports');
-    })->middleware('kasir');
+    Route::get('/kasir/inventory', [\App\Http\Controllers\Kasir\KasirProductController::class, 'index'])->middleware('kasir')->name('kasir.inventory');
+    Route::get('/kasir/reports', [\App\Http\Controllers\Kasir\KasirReportController::class, 'index'])->middleware('kasir');
 
     Route::get('/kasir/profile', function () {
         return view('kasir.profile');
@@ -145,3 +228,6 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/kasir/profile/password', [\App\Http\Controllers\Kasir\KasirProfileController::class, 'updatePassword'])->middleware('kasir');
 });
 
+
+// Chatbot Route (Public)
+Route::post('/chatbot/ask', [\App\Http\Controllers\ChatbotController::class, 'handle'])->name('chatbot.ask');

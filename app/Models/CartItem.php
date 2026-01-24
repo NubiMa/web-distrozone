@@ -22,10 +22,4 @@ class CartItem extends Model
     {
         return $this->belongsTo(ProductVariant::class, 'product_variant_id');
     }
-
-    // Alias for backwards compatibility
-    public function product()
-    {
-        return $this->productVariant;
-    }
 }

@@ -13,24 +13,22 @@ class KasirProductController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Product::active();
+        $search = $request->input('search');
 
-        // Search functionality
-        if ($request->has('search') && $request->search != '') {
-            $query->search($request->search);
-        }
+        $products = \App\Models\Product::with(['variants' => function($q) {
+                // Ensure we get variants to show stock
+            }])
+            ->when($search, function ($query) use ($search) {
+                $query->where('name', 'like', "%{$search}%")
+                    ->orWhere('brand', 'like', "%{$search}%")
+                    ->orWhereHas('variants', function ($q) use ($search) {
+                        $q->where('sku', 'like', "%{$search}%");
+                    });
+            })
+            ->latest()
+            ->paginate(12);
 
-        // Filter by stock availability
-        if ($request->has('in_stock') && $request->in_stock) {
-            $query->inStock();
-        }
-
-        $products = $query->latest()->paginate(20);
-
-        return response()->json([
-            'success' => true,
-            'data' => $products,
-        ]);
+        return view('kasir.inventory', compact('products', 'search'));
     }
 
     /**

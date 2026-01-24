@@ -132,13 +132,16 @@
                             @foreach ($transaction->details as $detail)
                                 <div class="flex gap-3">
                                     <div class="w-16 h-16 bg-gray-100 rounded flex-shrink-0 overflow-hidden">
-                                        <img src="{{ $detail->product->photo ? Storage::url($detail->product->photo) : 'https://placehold.co/100x100/F5F5F5/999999?text=No+Image' }}"
-                                            alt="{{ $detail->product->brand }}" class="w-full h-full object-cover">
+                                        <img src="{{ $detail->productVariant->photo ?? $detail->productVariant->product->photo ? Storage::url($detail->productVariant->photo ?? $detail->productVariant->product->photo) : 'https://placehold.co/100x100/F5F5F5/999999?text=No+Image' }}"
+                                            alt="{{ $detail->productVariant->product->name ?? 'Product' }}"
+                                            class="w-full h-full object-cover">
                                     </div>
                                     <div class="flex-1">
-                                        <p class="font-bold text-sm text-gray-900">{{ $detail->product->brand }}</p>
-                                        <p class="text-xs text-gray-500">{{ $detail->product->color }} •
-                                            {{ $detail->product->size }} • {{ $detail->product->type }}</p>
+                                        <p class="font-bold text-sm text-gray-900">
+                                            {{ $detail->productVariant->product->name ?? 'Product' }}</p>
+                                        <p class="text-xs text-gray-500">{{ $detail->productVariant->color }} •
+                                            {{ $detail->productVariant->size }} •
+                                            {{ $detail->productVariant->product->type ?? '' }}</p>
                                         <p class="text-xs text-gray-600 font-medium mt-1">{{ $detail->quantity }}x Rp
                                             {{ number_format($detail->price, 0, ',', '.') }}</p>
                                     </div>
@@ -153,6 +156,15 @@
 
                     <!-- Action Buttons -->
                     <div class="flex flex-col sm:flex-row gap-3 mt-8 pt-6 border-t border-gray-200">
+                        <a href="{{ route('checkout.receipt.download', $transaction->id) }}"
+                            class="flex-1 bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition-colors text-center uppercase tracking-wide text-sm flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                </path>
+                            </svg>
+                            Download PDF
+                        </a>
                         <a href="{{ url('/') }}"
                             class="flex-1 bg-white border-2 border-gray-300 text-gray-700 font-bold py-3 rounded-lg hover:bg-gray-50 transition-colors text-center uppercase tracking-wide text-sm">
                             Kembali ke Toko

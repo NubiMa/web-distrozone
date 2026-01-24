@@ -9,114 +9,59 @@ use Illuminate\Http\Request;
 class AdminSettingsController extends Controller
 {
     /**
-     * Get all settings
+     * Display settings page
+     */
+    /**
+     * Display settings page
      */
     public function index()
     {
-        $settings = StoreSetting::all()->groupBy('type');
-
-        return response()->json([
-            'success' => true,
-            'data' => $settings,
-        ]);
+        // Fetch all settings and map to key-value array
+        $settings = StoreSetting::all()->pluck('value', 'key');
+        
+        return view('admin.settings', compact('settings'));
     }
 
     /**
-     * Get specific setting by key
+     * Update store settings
      */
-    public function show($key)
+    public function update(Request $request)
     {
-        $setting = StoreSetting::where('key', $key)->first();
-
-        if (!$setting) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Setting not found',
-            ], 404);
-        }
-
-        return response()->json([
-            'success' => true,
-            'data' => $setting,
-        ]);
-    }
-
-    /**
-     * Update setting
-     */
-    public function update(Request $request, $key)
-    {
+        // Validate inputs
         $validated = $request->validate([
-            'value' => 'required',
-            'description' => 'nullable|string',
+            'store_name' => 'required|string|max:255',
+            'store_description' => 'nullable|string',
+            'store_address' => 'required|string',
+            'store_email' => 'required|email',
+            'store_phone' => 'required|string',
+            'store_currency' => 'required|string',
+            'store_timezone' => 'required|string',
+            'operating_hours' => 'nullable|array', // Expecting array for JSON storage
         ]);
 
-        $setting = StoreSetting::where('key', $key)->first();
+        try {
+            foreach ($validated as $key => $value) {
+                // Handle array values (like operating hours)
+                if (is_array($value)) {
+                    $value = json_encode($value);
+                    $type = 'json';
+                } else {
+                    $type = 'text';
+                }
 
-        if (!$setting) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Setting not found',
-            ], 404);
-        }
-
-        $setting->update([
-            'value' => $validated['value'],
-            'description' => $validated['description'] ?? $setting->description,
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Setting updated successfully',
-            'data' => $setting,
-        ]);
-    }
-
-    /**
-     * Update operational hours (batch update)
-     */
-    public function updateOperationalHours(Request $request)
-    {
-        $validated = $request->validate([
-            'offline_open_time' => 'nullable|string',
-            'offline_close_time' => 'nullable|string',
-            'offline_closed_day' => 'nullable|string',
-            'online_open_time' => 'nullable|string',
-            'online_close_time' => 'nullable|string',
-        ]);
-
-        foreach ($validated as $key => $value) {
-            if ($value !== null) {
-                StoreSetting::set($key, $value);
+                StoreSetting::updateOrCreate(
+                    ['key' => $key],
+                    [
+                        'value' => $value,
+                        'type' => $type
+                    ]
+                );
             }
+
+            return redirect()->route('admin.settings')->with('success', 'Changes saved successfully');
+
+        } catch (\Exception $e) {
+            return redirect()->back()->withInput()->withErrors(['error' => 'Failed to save settings: ' . $e->getMessage()]);
         }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Operational hours updated successfully',
-        ]);
-    }
-
-    /**
-     * Get current operational status
-     */
-    public function operationalStatus()
-    {
-        $status = [
-            'online_store_open' => StoreSetting::isOnlineStoreOpen(),
-            'offline_store_open' => StoreSetting::isOfflineStoreOpen(),
-            'settings' => [
-                'online_open_time' => StoreSetting::get('online_open_time'),
-                'online_close_time' => StoreSetting::get('online_close_time'),
-                'offline_open_time' => StoreSetting::get('offline_open_time'),
-                'offline_close_time' => StoreSetting::get('offline_close_time'),
-                'offline_closed_day' => StoreSetting::get('offline_closed_day'),
-            ],
-        ];
-
-        return response()->json([
-            'success' => true,
-            'data' => $status,
-        ]);
     }
 }

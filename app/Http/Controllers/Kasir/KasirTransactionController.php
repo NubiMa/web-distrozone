@@ -16,7 +16,7 @@ class KasirTransactionController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Transaction::with(['details.product', 'user'])
+        $query = Transaction::with(['details.productVariant.product', 'user'])
             ->where('cashier_id', auth()->id())
             ->latest();
 
@@ -112,7 +112,7 @@ class KasirTransactionController extends Controller
 
             DB::commit();
 
-            $transaction->load('details.product');
+            $transaction->load('details.productVariant.product');
 
             return response()->json([
                 'success' => true,
@@ -135,7 +135,7 @@ class KasirTransactionController extends Controller
      */
     public function show($id)
     {
-        $transaction = Transaction::with(['details.product', 'user'])
+        $transaction = Transaction::with(['details.productVariant.product', 'user'])
             ->where('cashier_id', auth()->id())
             ->findOrFail($id);
 
@@ -183,15 +183,15 @@ class KasirTransactionController extends Controller
                 }
                 $message = 'Payment verified successfully';
             } else {
-                $transaction->markAsRejected();
+                $transaction->markAsRejected(auth()->id());
                 if ($validated['notes'] ?? null) {
                     $transaction->notes = $validated['notes'];
                     $transaction->save();
                 }
 
-                // Restore stock
+                // Restore stock to product variants
                 foreach ($transaction->details as $detail) {
-                    $detail->product->increaseStock($detail->quantity);
+                    $detail->productVariant->increment('stock', $detail->quantity);
                 }
 
                 $message = 'Payment rejected';
@@ -220,7 +220,7 @@ class KasirTransactionController extends Controller
      */
     public function pendingOrders()
     {
-        $orders = Transaction::with(['details.product', 'user'])
+        $orders = Transaction::with(['details.productVariant.product', 'user'])
             ->online()
             ->pending()
             ->latest()
@@ -230,5 +230,58 @@ class KasirTransactionController extends Controller
             'success' => true,
             'data' => $orders,
         ]);
+    }
+    /**
+     * Display the orders page with filtering (SSR)
+     */
+    public function ordersPage(Request $request)
+    {
+        $status = $request->get('status', 'pending');
+        $search = $request->get('search');
+
+        $query = Transaction::with(['user', 'details.productVariant.product'])
+            ->latest();
+
+        // Apply filters based on tab
+        if ($status === 'pending') {
+            $query->online()->pending();
+        } elseif ($status === 'verified') {
+            $query->online()->verified();
+        } elseif ($status === 'rejected') {
+            $query->online()->where('payment_status', 'rejected');
+        } elseif ($status === 'history') {
+             // For history, maybe show all completed/verified/rejected? 
+             // Let's show all except pending for now, or just all.
+             // The design usually implies "Past orders".
+             // Let's show all non-pending online orders to avoid overlap or just EVERYTHING.
+             // Prompt said "4th is history order". Let's show all.
+        }
+
+        if ($search) {
+             $query->where(function($q) use ($search) {
+                 $q->where('transaction_code', 'like', "%{$search}%")
+                   ->orWhereHas('user', function($u) use ($search) {
+                       $u->where('name', 'like', "%{$search}%");
+                   });
+             });
+        }
+
+        $orders = $query->paginate(10)->withQueryString();
+        
+        // Stats for the top card (Pending Verify)
+        $pendingCount = Transaction::online()->pending()->count();
+
+        return view('kasir.orders', compact('orders', 'status', 'pendingCount', 'search'));
+    }
+    /**
+     * Display the payment verification page
+     */
+    public function verifyPage($id)
+    {
+        $transaction = Transaction::with(['details.productVariant.product', 'user', 'verifier'])
+            ->where('transaction_type', 'online')
+            ->findOrFail($id);
+
+        return view('kasir.verify', compact('transaction'));
     }
 }
