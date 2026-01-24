@@ -4,55 +4,45 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Product extends Model
 {
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
-        'product_code',
+        'name',
+        'slug',
         'brand',
         'type',
-        'color',
-        'size',
-        'selling_price',
-        'cost_price',
-        'stock',
-        'photo',
         'description',
+        'base_price',
+        'photo',
         'is_active',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
-        'selling_price' => 'decimal:2',
-        'cost_price' => 'decimal:2',
-        'stock' => 'integer',
+        'base_price' => 'decimal:2',
         'is_active' => 'boolean',
     ];
 
     /**
-     * Boot method to auto-generate product_code
+     * Boot method to auto-generate slug
      */
     protected static function boot()
     {
         parent::boot();
 
         static::creating(function ($product) {
-            if (!$product->product_code) {
-                // Generate product code: PRD-YYYYMMDD-XXX
-                $date = now()->format('Ymd');
-                $count = static::whereDate('created_at', now())->count() + 1;
-                $product->product_code = 'PRD-' . $date . '-' . str_pad($count, 3, '0', STR_PAD_LEFT);
+            if (!$product->slug) {
+                $product->slug = Str::slug($product->name);
+
+                // Ensure unique slug
+                $count = 1;
+                while (static::where('slug', $product->slug)->exists()) {
+                    $product->slug = Str::slug($product->name) . '-' . $count;
+                    $count++;
+                }
             }
         });
     }
@@ -60,53 +50,37 @@ class Product extends Model
     /**
      * Relationships
      */
-    
-    public function transactionDetails()
+    public function variants()
     {
-        return $this->hasMany(TransactionDetail::class);
+        return $this->hasMany(ProductVariant::class);
     }
 
-    /**
-     * Accessors
-     */
-    
-    public function getPhotoUrlAttribute()
+    public function activeVariants()
     {
-        if ($this->photo) {
-            return asset('storage/' . $this->photo);
-        }
-        return asset('images/default-product.png');
+        return $this->hasMany(ProductVariant::class)->where('is_active', true);
     }
 
-    public function getProfitMarginAttribute()
+    public function inStockVariants()
     {
-        if ($this->selling_price > 0) {
-            return (($this->selling_price - $this->cost_price) / $this->selling_price) * 100;
-        }
-        return 0;
+        return $this->hasMany(ProductVariant::class)
+            ->where('is_active', true)
+            ->where('stock', '>', 0);
     }
 
     /**
      * Scopes
      */
-    
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
     }
 
-    public function scopeInStock($query)
-    {
-        return $query->where('stock', '>', 0);
-    }
-
     public function scopeSearch($query, $search)
     {
         return $query->where(function ($q) use ($search) {
-            $q->where('product_code', 'like', "%{$search}%")
-              ->orWhere('brand', 'like', "%{$search}%")
-              ->orWhere('color', 'like', "%{$search}%")
-              ->orWhere('size', 'like', "%{$search}%");
+            $q->where('name', 'like', "%{$search}%")
+                ->orWhere('brand', 'like', "%{$search}%")
+                ->orWhere('description', 'like', "%{$search}%");
         });
     }
 
@@ -114,22 +88,6 @@ class Product extends Model
     {
         if ($brand) {
             return $query->where('brand', $brand);
-        }
-        return $query;
-    }
-
-    public function scopeFilterBySize($query, $size)
-    {
-        if ($size) {
-            return $query->where('size', $size);
-        }
-        return $query;
-    }
-
-    public function scopeFilterByColor($query, $color)
-    {
-        if ($color) {
-            return $query->where('color', $color);
         }
         return $query;
     }
@@ -143,23 +101,52 @@ class Product extends Model
     }
 
     /**
-     * Helper methods
+     * Accessors
      */
-    
-    public function decreaseStock($quantity)
+    public function getPhotoUrlAttribute()
     {
-        if ($this->stock >= $quantity) {
-            $this->stock -= $quantity;
-            $this->save();
-            return true;
+        if ($this->photo) {
+            return asset('storage/' . $this->photo);
         }
-        return false;
+        return asset('images/default-product.png');
     }
 
-    public function increaseStock($quantity)
+    public function getPriceRangeAttribute()
     {
-        $this->stock += $quantity;
-        $this->save();
-        return true;
+        $prices = $this->variants()->pluck('price');
+
+        if ($prices->isEmpty()) {
+            return $this->base_price;
+        }
+
+        $min = $prices->min();
+        $max = $prices->max();
+
+        if ($min == $max) {
+            return 'Rp ' . number_format($min, 0, ',', '.');
+        }
+
+        return 'Rp ' . number_format($min, 0, ',', '.') . ' - Rp ' . number_format($max, 0, ',', '.');
+    }
+
+    public function getAvailableColorsAttribute()
+    {
+        return $this->inStockVariants()
+            ->distinct()
+            ->pluck('color')
+            ->toArray();
+    }
+
+    public function getAvailableSizesAttribute()
+    {
+        return $this->inStockVariants()
+            ->distinct()
+            ->pluck('size')
+            ->toArray();
+    }
+
+    public function getTotalStockAttribute()
+    {
+        return $this->variants()->sum('stock');
     }
 }

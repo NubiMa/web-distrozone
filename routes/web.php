@@ -5,17 +5,24 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     if (Auth::check()) {
         $role = Auth::user()->role;
-        if ($role === 'admin') return redirect('/admin/dashboard');
-        if ($role === 'kasir') return redirect('/kasir/dashboard');
+        if ($role === 'admin')
+            return redirect('/admin/dashboard');
+        if ($role === 'kasir')
+            return redirect('/kasir/dashboard');
         return redirect()->route('dashboard'); // Customer
     }
-    
+
     $featuredProducts = \App\Models\Product::take(4)->get();
     return view('welcome', compact('featuredProducts'));
 });
 
 Route::get('/about', function () {
     return view('about');
+});
+
+Route::get('/debug-users', function () {
+    $users = \App\Models\User::orderBy('role')->orderBy('id')->get();
+    return view('debug-users', compact('users'));
 });
 
 Route::get('/products', function () {
@@ -98,17 +105,19 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', function () {
         $user = \Illuminate\Support\Facades\Auth::user();
-        if ($user->role === 'admin') return redirect('/admin/dashboard');
-        if ($user->role === 'kasir') return redirect('/kasir/dashboard');
-        
+        if ($user->role === 'admin')
+            return redirect('/admin/dashboard');
+        if ($user->role === 'kasir')
+            return redirect('/kasir/dashboard');
+
         // Customer Dashboard - fetch data
         $activeOrder = \App\Models\Transaction::where('user_id', $user->id)
             ->whereIn('order_status', ['pending', 'processing', 'shipped']) // Active only
             ->latest()
             ->first();
-            
+
         $recommendedProducts = \App\Models\Product::inRandomOrder()->take(4)->get();
-        
+
         return view('customer.dashboard', compact('activeOrder', 'recommendedProducts'));
     })->name('dashboard');
 
@@ -119,5 +128,20 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/kasir/dashboard', function () {
         return view('kasir.dashboard');
     })->middleware('kasir');
+
+    Route::get('/kasir/orders', function () {
+        return view('kasir.orders');
+    })->middleware('kasir');
+
+    Route::get('/kasir/reports', function () {
+        return view('kasir.reports');
+    })->middleware('kasir');
+
+    Route::get('/kasir/profile', function () {
+        return view('kasir.profile');
+    })->middleware('kasir');
+
+    Route::put('/kasir/profile/update', [\App\Http\Controllers\Kasir\KasirProfileController::class, 'updateProfile'])->middleware('kasir');
+    Route::put('/kasir/profile/password', [\App\Http\Controllers\Kasir\KasirProfileController::class, 'updatePassword'])->middleware('kasir');
 });
 

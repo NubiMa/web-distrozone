@@ -29,9 +29,11 @@ class WebAuthController extends Controller
 
             // Redirect based on role
             $role = Auth::user()->role;
-            if ($role === 'admin') return redirect()->intended('/admin/dashboard');
-            if ($role === 'kasir') return redirect()->intended('/kasir/dashboard');
-            
+            if ($role === 'admin')
+                return redirect()->intended('/admin/dashboard');
+            if ($role === 'kasir')
+                return redirect()->intended('/kasir/dashboard');
+
             return redirect()->intended('/dashboard'); // Customer -> Dashboard
         }
 
@@ -54,7 +56,6 @@ class WebAuthController extends Controller
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6|confirmed',
             'phone' => 'required|string|max:20',
-            'address' => 'required|string',
         ]);
 
         $user = User::create([
@@ -63,7 +64,7 @@ class WebAuthController extends Controller
             'password' => Hash::make($validated['password']),
             'role' => 'customer',
             'phone' => $validated['phone'],
-            'address' => $validated['address'],
+            'address' => null, // Address can be added later in profile
             'is_active' => true,
         ]);
 

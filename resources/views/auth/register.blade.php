@@ -57,15 +57,6 @@
                             @enderror
                         </div>
 
-                        <div>
-                            <label for="address" class="block text-sm font-medium text-gray-700">Shipping
-                                Address</label>
-                            <textarea id="address" name="address" rows="3" required
-                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-accent focus:border-accent sm:text-sm">{{ old('address') }}</textarea>
-                            @error('address')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
 
                         <div>
                             <label for="password" class="block text-sm font-medium text-gray-700">Password</label>

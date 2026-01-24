@@ -3,208 +3,232 @@
 namespace Database\Seeders;
 
 use App\Models\Product;
+use App\Models\ProductVariant;
 use Illuminate\Database\Seeder;
 
 class ProductSeeder extends Seeder
 {
     public function run(): void
     {
-        // Define base products with variants
-        $baseProducts = [
+        // Define parent products
+        $products = [
             // Nike Products
             [
+                'name' => 'Nike Sportswear Essential',
                 'brand' => 'Nike',
-                'base_name' => 'Nike Sportswear Essential',
                 'type' => 'lengan pendek',
-                'selling_price' => 275000,
-                'cost_price' => 180000,
+                'base_price' => 275000,
                 'description' => 'Classic Nike tee with embroidered swoosh. Premium cotton blend for ultimate comfort.',
-                'colors' => ['Black', 'White', 'Grey'],
-                'sizes' => ['S', 'M', 'L', 'XL'],
-                'stock_range' => [15, 30],
+                'variants' => [
+                    ['color' => 'Black', 'sizes' => ['S', 'M', 'L', 'XL'], 'stock' => [15, 25, 30, 20]],
+                    ['color' => 'White', 'sizes' => ['S', 'M', 'L', 'XL'], 'stock' => [20, 30, 25, 15]],
+                    ['color' => 'Grey', 'sizes' => ['M', 'L', 'XL'], 'stock' => [15, 20, 18]],
+                ],
             ],
             [
+                'name' => 'Nike Dri-FIT Performance',
                 'brand' => 'Nike',
-                'base_name' => 'Nike Dri-FIT Performance',
                 'type' => 'lengan pendek',
-                'selling_price' => 320000,
-                'cost_price' => 210000,
+                'base_price' => 320000,
                 'description' => 'Moisture-wicking fabric keeps you dry and comfortable during workouts.',
-                'colors' => ['White', 'Navy', 'Red'],
-                'sizes' => ['M', 'L', 'XL'],
-                'stock_range' => [10, 25],
+                'variants' => [
+                    ['color' => 'White', 'sizes' => ['M', 'L', 'XL'], 'stock' => [12, 15, 10]],
+                    ['color' => 'Navy', 'sizes' => ['M', 'L', 'XL'], 'stock' => [10, 12, 8]],
+                    ['color' => 'Red', 'sizes' => ['M', 'L'], 'stock' => [8, 10]],
+                ],
             ],
             [
+                'name' => 'Nike Tech Fleece Hoodie',
                 'brand' => 'Nike',
-                'base_name' => 'Nike Tech Fleece',
                 'type' => 'lengan panjang',
-                'selling_price' => 890000,
-                'cost_price' => 580000,
+                'base_price' => 890000,
                 'description' => 'Premium fleece with innovative design for warmth without weight.',
-                'colors' => ['Grey', 'Black'],
-                'sizes' => ['M', 'L', 'XL', '2XL'],
-                'stock_range' => [5, 15],
+                'variants' => [
+                    ['color' => 'Grey', 'sizes' => ['M', 'L', 'XL', '2XL'], 'stock' => [8, 10, 12, 5]],
+                    ['color' => 'Black', 'sizes' => ['M', 'L', 'XL'], 'stock' => [10, 12, 8]],
+                ],
             ],
 
             // Adidas Products
             [
+                'name' => 'Adidas Originals Trefoil Tee',
                 'brand' => 'Adidas',
-                'base_name' => 'Adidas Originals Trefoil',
                 'type' => 'lengan pendek',
-                'selling_price' => 295000,
-                'cost_price' => 195000,
+                'base_price' => 295000,
                 'description' => 'Iconic trefoil logo on soft cotton. Streetwear essential.',
-                'colors' => ['Black', 'White', 'Navy'],
-                'sizes' => ['S', 'M', 'L', 'XL'],
-                'stock_range' => [20, 35],
+                'variants' => [
+                    ['color' => 'Black', 'sizes' => ['S', 'M', 'L', 'XL'], 'stock' => [20, 25, 30, 15]],
+                    ['color' => 'White', 'sizes' => ['S', 'M', 'L', 'XL'], 'stock' => [18, 22, 20, 12]],
+                    ['color' => 'Navy', 'sizes' => ['M', 'L', 'XL'], 'stock' => [15, 18, 10]],
+                ],
             ],
             [
+                'name' => 'Adidas Performance Training Tee',
                 'brand' => 'Adidas',
-                'base_name' => 'Adidas Performance Training',
                 'type' => 'lengan pendek',
-                'selling_price' => 310000,
-                'cost_price' => 205000,
+                'base_price' => 310000,
                 'description' => 'Breathable athletic tee with moisture management.',
-                'colors' => ['Red', 'Blue', 'Black'],
-                'sizes' => ['M', 'L', 'XL'],
-                'stock_range' => [15, 25],
+                'variants' => [
+                    ['color' => 'Red', 'sizes' => ['M', 'L', 'XL'], 'stock' => [12, 15, 10]],
+                    ['color' => 'Blue', 'sizes' => ['M', 'L', 'XL'], 'stock' => [10, 12, 8]],
+                    ['color' => 'Black', 'sizes' => ['M', 'L'], 'stock' => [15, 12]],
+                ],
             ],
             [
+                'name' => 'Adidas Essentials Hoodie',
                 'brand' => 'Adidas',
-                'base_name' => 'Adidas Essentials Hoodie',
                 'type' => 'lengan panjang',
-                'selling_price' => 750000,
-                'cost_price' => 490000,
+                'base_price' => 750000,
                 'description' => 'Comfortable cotton-blend hoodie with kangaroo pocket.',
-                'colors' => ['Black', 'Grey', 'Navy'],
-                'sizes' => ['M', 'L', 'XL'],
-                'stock_range' => [10, 20],
+                'variants' => [
+                    ['color' => 'Black', 'sizes' => ['M', 'L', 'XL'], 'stock' => [10, 12, 8]],
+                    ['color' => 'Grey', 'sizes' => ['M', 'L', 'XL'], 'stock' => [12, 10, 6]],
+                    ['color' => 'Navy', 'sizes' => ['L', 'XL'], 'stock' => [8, 5]],
+                ],
             ],
 
             // Uniqlo Products
             [
+                'name' => 'Uniqlo AIRism Cotton Tee',
                 'brand' => 'Uniqlo',
-                'base_name' => 'Uniqlo AIRism Cotton',
                 'type' => 'lengan pendek',
-                'selling_price' => 149000,
-                'cost_price' => 95000,
+                'base_price' => 149000,
                 'description' => 'Innovative AIRism technology for smooth, cool comfort.',
-                'colors' => ['White', 'Black', 'Grey', 'Navy'],
-                'sizes' => ['S', 'M', 'L', 'XL'],
-                'stock_range' => [30, 50],
+                'variants' => [
+                    ['color' => 'White', 'sizes' => ['S', 'M', 'L', 'XL'], 'stock' => [30, 40, 35, 25]],
+                    ['color' => 'Black', 'sizes' => ['S', 'M', 'L', 'XL'], 'stock' => [28, 38, 32, 22]],
+                    ['color' => 'Grey', 'sizes' => ['M', 'L', 'XL'], 'stock' => [25, 30, 20]],
+                    ['color' => 'Navy', 'sizes' => ['M', 'L', 'XL'], 'stock' => [20, 25, 15]],
+                ],
             ],
             [
+                'name' => 'Uniqlo Graphic Streetwear Tee',
                 'brand' => 'Uniqlo',
-                'base_name' => 'Uniqlo Graphic Streetwear',
                 'type' => 'lengan pendek',
-                'selling_price' => 179000,
-                'cost_price' => 115000,
+                'base_price' => 179000,
                 'description' => 'Bold graphic print on premium cotton. Limited edition design.',
-                'colors' => ['Black', 'White'],
-                'sizes' => ['M', 'L', 'XL'],
-                'stock_range' => [20, 35],
+                'variants' => [
+                    ['color' => 'Black', 'sizes' => ['M', 'L', 'XL'], 'stock' => [18, 22, 15]],
+                    ['color' => 'White', 'sizes' => ['M', 'L', 'XL'], 'stock' => [20, 25, 18]],
+                ],
             ],
             [
+                'name' => 'Uniqlo Oversized Tee',
                 'brand' => 'Uniqlo',
-                'base_name' => 'Uniqlo Oversized',
                 'type' => 'lengan pendek',
-                'selling_price' => 159000,
-                'cost_price' => 100000,
+                'base_price' => 159000,
                 'description' => 'Relaxed oversized fit. Perfect for layering.',
-                'colors' => ['Grey', 'Beige', 'Black'],
-                'sizes' => ['L', 'XL', '2XL'],
-                'stock_range' => [15, 30],
+                'variants' => [
+                    ['color' => 'Grey', 'sizes' => ['L', 'XL', '2XL'], 'stock' => [15, 20, 12]],
+                    ['color' => 'Beige', 'sizes' => ['L', 'XL', '2XL'], 'stock' => [12, 18, 10]],
+                    ['color' => 'Black', 'sizes' => ['L', 'XL'], 'stock' => [18, 15]],
+                ],
             ],
 
             // H&M Products
             [
+                'name' => 'H&M Regular Fit Cotton Tee',
                 'brand' => 'H&M',
-                'base_name' => 'H&M Regular Fit Cotton',
                 'type' => 'lengan pendek',
-                'selling_price' => 129000,
-                'cost_price' => 80000,
+                'base_price' => 129000,
                 'description' => 'Basic crew neck tee in soft cotton jersey.',
-                'colors' => ['White', 'Black', 'Grey', 'Navy'],
-                'sizes' => ['S', 'M', 'L', 'XL'],
-                'stock_range' => [40, 60],
+                'variants' => [
+                    ['color' => 'White', 'sizes' => ['S', 'M', 'L', 'XL'], 'stock' => [40, 50, 45, 30]],
+                    ['color' => 'Black', 'sizes' => ['S', 'M', 'L', 'XL'], 'stock' => [38, 48, 42, 28]],
+                    ['color' => 'Grey', 'sizes' => ['M', 'L', 'XL'], 'stock' => [30, 35, 25]],
+                    ['color' => 'Navy', 'sizes' => ['M', 'L', 'XL'], 'stock' => [25, 30, 20]],
+                ],
             ],
             [
+                'name' => 'H&M Printed Tee',
                 'brand' => 'H&M',
-                'base_name' => 'H&M Printed',
                 'type' => 'lengan pendek',
-                'selling_price' => 149000,
-                'cost_price' => 95000,
+                'base_price' => 149000,
                 'description' => 'Trendy print design. Regular fit with ribbed crew neck.',
-                'colors' => ['Black', 'White', 'Red'],
-                'sizes' => ['M', 'L', 'XL'],
-                'stock_range' => [25, 40],
+                'variants' => [
+                    ['color' => 'Black', 'sizes' => ['M', 'L', 'XL'], 'stock' => [20, 25, 15]],
+                    ['color' => 'White', 'sizes' => ['M', 'L', 'XL'], 'stock' => [18, 22, 12]],
+                    ['color' => 'Red', 'sizes' => ['M', 'L'], 'stock' => [15, 18]],
+                ],
             ],
             [
+                'name' => 'H&M Relaxed Fit Hoodie',
                 'brand' => 'H&M',
-                'base_name' => 'H&M Relaxed Fit Hoodie',
                 'type' => 'lengan panjang',
-                'selling_price' => 399000,
-                'cost_price' => 260000,
+                'base_price' => 399000,
                 'description' => 'Soft cotton blend with hood and kangaroo pocket.',
-                'colors' => ['Grey', 'Black'],
-                'sizes' => ['M', 'L', 'XL'],
-                'stock_range' => [15, 25],
+                'variants' => [
+                    ['color' => 'Grey', 'sizes' => ['M', 'L', 'XL'], 'stock' => [15, 18, 10]],
+                    ['color' => 'Black', 'sizes' => ['M', 'L', 'XL'], 'stock' => [12, 15, 8]],
+                ],
             ],
 
             // Premium Items
             [
+                'name' => 'Nike x OFF-WHITE Collaboration Tee',
                 'brand' => 'Nike',
-                'base_name' => 'Nike x OFF-WHITE Collaboration',
                 'type' => 'lengan pendek',
-                'selling_price' => 1250000,
-                'cost_price' => 850000,
+                'base_price' => 1250000,
                 'description' => 'Limited edition collaboration. Collectors item with unique design.',
-                'colors' => ['White', 'Black'],
-                'sizes' => ['M', 'L'],
-                'stock_range' => [2, 5],
+                'variants' => [
+                    ['color' => 'White', 'sizes' => ['M', 'L'], 'stock' => [3, 2]],
+                    ['color' => 'Black', 'sizes' => ['M', 'L'], 'stock' => [2, 3]],
+                ],
             ],
             [
+                'name' => 'Adidas Yeezy Essentials Tee',
                 'brand' => 'Adidas',
-                'base_name' => 'Adidas Yeezy Essentials',
                 'type' => 'lengan pendek',
-                'selling_price' => 980000,
-                'cost_price' => 650000,
+                'base_price' => 980000,
                 'description' => 'Yeezy line premium oversized tee with unique colorway.',
-                'colors' => ['Beige', 'Black'],
-                'sizes' => ['L', 'XL'],
-                'stock_range' => [3, 8],
+                'variants' => [
+                    ['color' => 'Beige', 'sizes' => ['L', 'XL'], 'stock' => [5, 3]],
+                    ['color' => 'Black', 'sizes' => ['L', 'XL'], 'stock' => [4, 4]],
+                ],
             ],
         ];
 
-        $productCount = 0;
+        $totalProducts = 0;
+        $totalVariants = 0;
 
-        foreach ($baseProducts as $base) {
-            foreach ($base['colors'] as $color) {
-                foreach ($base['sizes'] as $size) {
-                    $stock = rand($base['stock_range'][0], $base['stock_range'][1]);
-                    
-                    // Randomly set some variants to out of stock (10% chance)
-                    if (rand(1, 10) === 1) {
+        foreach ($products as $productData) {
+            // Create parent product
+            $product = Product::create([
+                'name' => $productData['name'],
+                'brand' => $productData['brand'],
+                'type' => $productData['type'],
+                'base_price' => $productData['base_price'],
+                'description' => $productData['description'],
+                'is_active' => true,
+            ]);
+
+            $totalProducts++;
+
+            // Create variants
+            foreach ($productData['variants'] as $variantGroup) {
+                foreach ($variantGroup['sizes'] as $index => $size) {
+                    $stock = $variantGroup['stock'][$index] ?? 0;
+
+                    // Randomly set some variants to out of stock (5% chance)
+                    if (rand(1, 20) === 1) {
                         $stock = 0;
                     }
 
-                    Product::create([
-                        'brand' => $base['brand'],
-                        'type' => $base['type'],
-                        'color' => $color,
+                    ProductVariant::create([
+                        'product_id' => $product->id,
+                        'color' => $variantGroup['color'],
                         'size' => $size,
-                        'selling_price' => $base['selling_price'],
-                        'cost_price' => $base['cost_price'],
                         'stock' => $stock,
-                        'description' => $base['description'],
+                        'price' => $productData['base_price'],
+                        'cost_price' => $productData['base_price'] * 0.65, // 35% margin
                         'is_active' => true,
                     ]);
 
-                    $productCount++;
+                    $totalVariants++;
                 }
             }
         }
 
-        $this->command->info("Created {$productCount} product variants successfully!");
+        $this->command->info("Created {$totalProducts} products with {$totalVariants} variants successfully!");
     }
 }

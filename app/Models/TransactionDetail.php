@@ -16,7 +16,7 @@ class TransactionDetail extends Model
      */
     protected $fillable = [
         'transaction_id',
-        'product_id',
+        'product_variant_id', // Changed from product_id
         'quantity',
         'price',
         'cost_price',
@@ -38,21 +38,27 @@ class TransactionDetail extends Model
     /**
      * Relationships
      */
-    
+
     public function transaction()
     {
         return $this->belongsTo(Transaction::class);
     }
 
+    public function productVariant()
+    {
+        return $this->belongsTo(ProductVariant::class, 'product_variant_id');
+    }
+
+    // Alias for backwards compatibility
     public function product()
     {
-        return $this->belongsTo(Product::class);
+        return $this->productVariant;
     }
 
     /**
      * Accessors
      */
-    
+
     public function getProfitAttribute()
     {
         return ($this->price - $this->cost_price) * $this->quantity;

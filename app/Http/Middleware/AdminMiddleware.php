@@ -15,25 +15,38 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // Check if user is authenticated
         if (!auth()->check()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthenticated. Please login first.',
-            ], 401);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthenticated. Please login first.',
+                ], 401);
+            }
+            return redirect()->route('login');
         }
 
+        // Check if user has admin role
         if (auth()->user()->role !== 'admin') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized. Admin access only.',
-            ], 403);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized. Admin access only.',
+                ], 403);
+            }
+            abort(403, 'Unauthorized. Admin access only.');
         }
 
+        // Check if user account is active
         if (!auth()->user()->is_active) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Your account has been deactivated.',
-            ], 403);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Your account has been deactivated.',
+                ], 403);
+            }
+            auth()->logout();
+            return redirect()->route('login')->withErrors(['email' => 'Your account has been deactivated.']);
         }
 
         return $next($request);
