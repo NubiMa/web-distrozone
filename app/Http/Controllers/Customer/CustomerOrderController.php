@@ -174,8 +174,11 @@ class CustomerOrderController extends Controller
         $order = Transaction::with(['details.productVariant.product', 'cashier', 'verifier'])
             ->where('user_id', auth()->id())
             ->findOrFail($id);
+        
+        // Get store settings for payment details display
+        $storeSettings = \App\Models\StoreSetting::pluck('value', 'key')->toArray();
 
-        return view('customer.orders.show', compact('order'));
+        return view('customer.orders.show', compact('order', 'storeSettings'));
     }
 
     /**

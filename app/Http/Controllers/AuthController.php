@@ -16,6 +16,7 @@ class AuthController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'username' => 'required|string|unique:users,username|max:50',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6|confirmed',
             'phone' => 'required|string|max:20',
@@ -24,6 +25,7 @@ class AuthController extends Controller
 
         $user = User::create([
             'name' => $validated['name'],
+            'username' => $validated['username'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'role' => 'customer',
@@ -49,16 +51,27 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        $validated = $request->validate([
-            'email' => 'required|email',
+        $request->validate([
+            'login' => 'nullable|string',
+            'email' => 'nullable|string',
+            'username' => 'nullable|string',
             'password' => 'required|string',
         ]);
 
-        $user = User::where('email', $validated['email'])->first();
+        $user = null;
 
-        if (!$user || !Hash::check($validated['password'], $user->password)) {
+        if ($request->filled('email')) {
+            $user = User::where('email', $request->email)->first();
+        } elseif ($request->filled('username')) {
+            $user = User::where('username', $request->username)->first();
+        } elseif ($request->filled('login')) {
+            $field = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+            $user = User::where($field, $request->login)->first();
+        }
+
+        if (!$user || !Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
+                'login' => ['The provided credentials are incorrect.'],
             ]);
         }
 

@@ -75,6 +75,48 @@ class StoreSettingSeeder extends Seeder
                 'type' => 'integer',
                 'description' => 'Maksimal kaos per kilogram untuk perhitungan ongkir',
             ],
+            
+            // Online store hours (per-day schedule)
+            [
+                'key' => 'online_hours',
+                'value' => json_encode([
+                    'Monday' => ['start' => '09:00', 'end' => '21:00', 'closed' => false],
+                    'Tuesday' => ['start' => '09:00', 'end' => '21:00', 'closed' => false],
+                    'Wednesday' => ['start' => '09:00', 'end' => '21:00', 'closed' => false],
+                    'Thursday' => ['start' => '09:00', 'end' => '21:00', 'closed' => false],
+                    'Friday' => ['start' => '09:00', 'end' => '22:00', 'closed' => false],
+                    'Saturday' => ['start' => '10:00', 'end' => '22:00', 'closed' => false],
+                    'Sunday' => ['start' => '10:00', 'end' => '21:00', 'closed' => false],
+                ]),
+                'type' => 'json',
+                'description' => 'Online store hours for each day of the week',
+            ],
+            
+            // Store contact information
+            [
+                'key' => 'store_email',
+                'value' => 'help@distrozone.com',
+                'type' => 'text',
+                'description' => 'Store support email',
+            ],
+            [
+                'key' => 'store_phone',
+                'value' => '+62 21 5555 0199',
+                'type' => 'text',
+                'description' => 'Store phone number',
+            ],
+            [
+                'key' => 'store_currency',
+                'value' => 'IDR',
+                'type' => 'text',
+                'description' => 'Store currency',
+            ],
+            [
+                'key' => 'store_timezone',
+                'value' => 'Asia/Jakarta',
+                'type' => 'text',
+                'description' => 'Store timezone',
+            ],
         ];
 
         foreach ($settings as $setting) {

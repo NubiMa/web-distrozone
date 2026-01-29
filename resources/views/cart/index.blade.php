@@ -61,8 +61,7 @@
                                     <!-- Image -->
                                     <div
                                         class="w-full sm:w-28 aspect-[4/5] bg-gray-50 rounded-lg overflow-hidden flex-shrink-0 border border-gray-100">
-                                        <img src="{{ $details['image'] ? Storage::url($details['image']) : 'https://placehold.co/400x500/F5F5F5/111111?text=No+Image' }}"
-                                            alt="{{ $details['name'] }}"
+                                        <img src="{{ $details['image'] }}" alt="{{ $details['name'] }}"
                                             class="w-full h-full object-cover object-center">
                                     </div>
 

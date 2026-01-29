@@ -19,7 +19,7 @@ return new class extends Migration
             $table->enum('transaction_type', ['offline', 'online'])->default('offline');
             
             // Payment information
-            $table->enum('payment_method', ['tunai', 'qris', 'transfer']); // Cash, QRIS, Bank Transfer
+            $table->string('payment_method'); // Dynamic payment methods from settings
             $table->enum('payment_status', ['pending', 'verified', 'rejected'])->default('pending');
             $table->string('payment_proof')->nullable(); // For online orders
             

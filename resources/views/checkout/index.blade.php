@@ -18,13 +18,15 @@
             <form action="{{ route('checkout.store') }}" method="POST" enctype="multipart/form-data"
                 @submit="if(!proofPreview) { alert('Harap upload bukti pembayaran terlebih dahulu!'); $event.preventDefault(); return false; } if(!shippingDestination) { alert('Harap pilih kota tujuan terlebih dahulu!'); $event.preventDefault(); return false; }"
                 x-data="{
-                    paymentMethod: 'transfer',
+                    paymentMethods: {{ Js::from($paymentMethods) }},
+                    selectedPaymentIndex: 0,
                     shippingDestination: '',
                     shippingCost: 0,
                     subtotal: {{ $subtotal }},
                     proofPreview: null,
                     addressModalOpen: false,
                     selectedAddress: {{ Js::from($primaryAddress) }},
+                    get selectedPayment() { return this.paymentMethods[this.selectedPaymentIndex] || {}; },
                     get total() { return this.subtotal + this.shippingCost; }
                 }">
                 @csrf
@@ -101,125 +103,194 @@
                         <div class="bg-white border border-gray-200 rounded-xl p-6">
                             <h2 class="text-lg font-bold text-primary mb-4">Metode Pembayaran</h2>
 
-                            <!-- Payment Tabs -->
-                            <div class="flex gap-2 mb-6 border-b border-gray-200">
-                                <button type="button" @click="paymentMethod = 'transfer'"
-                                    :class="paymentMethod === 'transfer' ? 'border-b-2 border-accent text-accent' :
-                                        'text-gray-500'"
-                                    class="px-4 py-2 font-bold text-sm uppercase tracking-wide transition-colors">
-                                    <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z">
-                                        </path>
-                                    </svg>
-                                    Transfer Bank
-                                </button>
-                                <button type="button" @click="paymentMethod = 'qris'"
-                                    :class="paymentMethod === 'qris' ? 'border-b-2 border-accent text-accent' :
-                                        'text-gray-500'"
-                                    class="px-4 py-2 font-bold text-sm uppercase tracking-wide transition-colors">
-                                    <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z">
-                                        </path>
-                                    </svg>
-                                    QRIS
-                                </button>
-                            </div>
+                            @if (empty($paymentMethods))
+                                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
+                                    <p class="text-sm font-bold text-yellow-800">Belum ada metode pembayaran yang
+                                        tersedia.</p>
+                                    <p class="text-xs text-yellow-600 mt-1">Silakan hubungi administrator.</p>
+                                </div>
+                            @else
+                                <!-- Payment Method Selection -->
+                                <div class="space-y-3 mb-6">
+                                    @foreach ($paymentMethods as $index => $method)
+                                        <div class="border rounded-lg p-4 cursor-pointer transition-all hover:border-accent"
+                                            :class="selectedPaymentIndex === {{ $index }} ?
+                                                'border-accent bg-orange-50' : 'border-gray-200'"
+                                            @click="selectedPaymentIndex = {{ $index }}">
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex items-center gap-3">
+                                                    <!-- Icon based on type -->
+                                                    @if ($method['type'] === 'bank_transfer')
+                                                        <svg class="w-8 h-8 text-gray-400" fill="none"
+                                                            stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z">
+                                                            </path>
+                                                        </svg>
+                                                    @elseif($method['type'] === 'qris')
+                                                        <svg class="w-8 h-8 text-gray-400" fill="none"
+                                                            stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z">
+                                                            </path>
+                                                        </svg>
+                                                    @elseif($method['type'] === 'e_wallet')
+                                                        <svg class="w-8 h-8 text-gray-400" fill="none"
+                                                            stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z">
+                                                            </path>
+                                                        </svg>
+                                                    @endif
+                                                    <div>
+                                                        <p class="font-bold text-primary">{{ $method['name'] }}</p>
+                                                        <p class="text-xs text-gray-500 capitalize">
+                                                            {{ str_replace('_', ' ', $method['type']) }}</p>
+                                                    </div>
+                                                </div>
+                                                <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center"
+                                                    :class="selectedPaymentIndex === {{ $index }} ? 'border-accent' :
+                                                        'border-gray-300'">
+                                                    <div class="w-3 h-3 rounded-full bg-accent"
+                                                        x-show="selectedPaymentIndex === {{ $index }}"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
 
-                            <!-- Bank Transfer Instructions -->
-                            <div x-show="paymentMethod === 'transfer'" x-transition
-                                class="bg-orange-50 border border-orange-200 rounded-lg p-6">
-                                <div class="flex items-start gap-3 mb-4">
-                                    <div class="bg-orange-100 rounded-full p-2">
-                                        <svg class="w-5 h-5 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                                <!-- Payment Details -->
+                                <div class="bg-orange-50 border border-orange-200 rounded-lg p-6">
+                                    <div class="flex items-start gap-3 mb-4">
+                                        <div class="bg-orange-100 rounded-full p-2">
+                                            <svg class="w-5 h-5 text-orange-600" fill="currentColor"
+                                                viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                                    clip-rule="evenodd"></path>
+                                            </svg>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="font-bold text-sm text-orange-800 mb-1">Instruksi Pembayaran</p>
+                                            <p class="text-xs text-orange-700">Transfer total pembayaran sesuai metode
+                                                yang dipilih. <strong>Verifikasi diperlukan</strong>.</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Bank Transfer Details -->
+                                    <template x-if="selectedPayment.type === 'bank_transfer'">
+                                        <div class="bg-white border border-orange-200 rounded-lg p-4 space-y-3">
+                                            <div class="flex items-center gap-3">
+                                                <svg class="w-8 h-8 text-gray-400" fill="none"
+                                                    stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z">
+                                                    </path>
+                                                </svg>
+                                                <div>
+                                                    <p
+                                                        class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                                                        Nama Bank</p>
+                                                    <p class="font-bold text-primary"
+                                                        x-text="selectedPayment.details?.bank_name || 'N/A'"></p>
+                                                </div>
+                                            </div>
+                                            <div class="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <p
+                                                        class="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
+                                                        No. Rekening</p>
+                                                    <div class="flex items-center gap-2">
+                                                        <p class="font-mono font-bold text-primary"
+                                                            x-text="selectedPayment.details?.account_number || 'N/A'">
+                                                        </p>
+                                                        <button type="button"
+                                                            @click="navigator.clipboard.writeText(selectedPayment.details?.account_number || '')"
+                                                            class="text-accent hover:text-accent-light">
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                                viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                                    stroke-width="2"
+                                                                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z">
+                                                                </path>
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <p
+                                                        class="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
+                                                        Atas Nama</p>
+                                                    <p class="font-bold text-primary"
+                                                        x-text="selectedPayment.details?.account_holder || 'N/A'"></p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </template>
+
+                                    <!-- QRIS Details -->
+                                    <template x-if="selectedPayment.type === 'qris'">
+                                        <div class="bg-white border border-orange-200 rounded-lg p-4 text-center">
+                                            <p class="text-sm font-bold text-gray-700 mb-4">Scan QR Code untuk
+                                                pembayaran</p>
+                                            <div class="inline-block bg-white p-4 rounded-xl shadow-md">
+                                                <template x-if="selectedPayment.details?.image_url">
+                                                    <img :src="selectedPayment.details.image_url" alt="QRIS"
+                                                        class="w-64 h-auto mx-auto">
+                                                </template>
+                                                <template x-if="!selectedPayment.details?.image_url">
+                                                    <div
+                                                        class="w-64 h-64 bg-gray-100 flex items-center justify-center text-gray-400">
+                                                        <p class="text-sm">QRIS belum tersedia</p>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </template>
+
+                                    <!-- E-Wallet Details -->
+                                    <template x-if="selectedPayment.type === 'e_wallet'">
+                                        <div class="bg-white border border-orange-200 rounded-lg p-4">
+                                            <div class="space-y-2">
+                                                <div>
+                                                    <p
+                                                        class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                                                        Provider</p>
+                                                    <p class="font-bold text-primary"
+                                                        x-text="selectedPayment.details?.provider || 'N/A'"></p>
+                                                </div>
+                                                <div>
+                                                    <p
+                                                        class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                                                        Nomor</p>
+                                                    <p class="font-bold text-primary"
+                                                        x-text="selectedPayment.details?.phone || 'N/A'"></p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </template>
+
+                                    <div class="mt-4 text-xs text-gray-600 flex items-start gap-2">
+                                        <svg class="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" fill="currentColor"
+                                            viewBox="0 0 20 20">
                                             <path fill-rule="evenodd"
                                                 d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
                                                 clip-rule="evenodd"></path>
                                         </svg>
-                                    </div>
-                                    <div class="flex-1">
-                                        <p class="font-bold text-sm text-orange-800 mb-1">Instruksi Transfer Manual</p>
-                                        <p class="text-xs text-orange-700">Transfer total pembayaran ke rekening di
-                                            bawah ini. <strong>Verifikasi diperlukan</strong>.</p>
+                                        <p>Pesanan akan diproses setelah kasir memverifikasi pembayaran Anda. Mohon
+                                            upload bukti transfer di bawah.</p>
                                     </div>
                                 </div>
 
-                                <div class="bg-white border border-orange-200 rounded-lg p-4 space-y-3">
-                                    <div class="flex items-center gap-3">
-                                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z">
-                                            </path>
-                                        </svg>
-                                        <div>
-                                            <p class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
-                                                Nama
-                                                Bank</p>
-                                            <p class="font-bold text-primary">
-                                                {{ $storeSettings['bank_name'] ?? 'Bank BCA' }}</p>
-                                        </div>
-                                    </div>
-                                    <div class="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <p
-                                                class="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
-                                                No. Rekening</p>
-                                            <div class="flex items-center gap-2">
-                                                <p class="font-mono font-bold text-primary">
-                                                    {{ $storeSettings['bank_account_number'] ?? '1234567890' }}</p>
-                                                <button type="button"
-                                                    onclick="navigator.clipboard.writeText('{{ $storeSettings['bank_account_number'] ?? '1234567890' }}')"
-                                                    class="text-accent hover:text-accent-light">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z">
-                                                        </path>
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <p
-                                                class="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
-                                                Atas Nama</p>
-                                            <p class="font-bold text-primary">
-                                                {{ $storeSettings['bank_account_holder'] ?? 'DistroZone Inc.' }}</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="mt-4 text-xs text-gray-600 flex items-start gap-2">
-                                    <svg class="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" fill="currentColor"
-                                        viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd"
-                                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                                            clip-rule="evenodd"></path>
-                                    </svg>
-                                    <p>Pesanan akan diproses setelah kasir memverifikasi pembayaran Anda. Mohon upload
-                                        bukti transfer di bawah.</p>
-                                </div>
-                            </div>
-
-                            <!-- QRIS Instructions -->
-                            <div x-show="paymentMethod === 'qris'" x-transition
-                                class="bg-orange-50 border border-orange-200 rounded-lg p-6 text-center">
-                                <p class="text-sm font-bold text-gray-700 mb-4">Scan QR Code di bawah untuk melakukan
-                                    pembayaran</p>
-                                <div class="inline-block bg-white p-4 rounded-xl shadow-md">
-                                    <img src="{{ asset($storeSettings['qris_image'] ?? 'images/payment/qris-distrozone.png') }}"
-                                        alt="QRIS DistroZone" class="w-64 h-auto mx-auto">
-                                </div>
-                                <p class="text-xs text-gray-600 mt-4">Setelah pembayaran, upload bukti transfer di
-                                    bawah.</p>
-                            </div>
-
-                            <input type="hidden" name="payment_method" x-model="paymentMethod">
+                                <!-- Hidden input for selected payment method -->
+                                <input type="hidden" name="payment_method_id" :value="selectedPaymentIndex">
+                                <input type="hidden" name="payment_method_type" :value="selectedPayment.type">
+                                <input type="hidden" name="payment_method_name" :value="selectedPayment.name">
+                            @endif
                         </div>
 
                         <!-- Shipping Destination -->
@@ -317,7 +388,7 @@
                                 @foreach ($cartItems as $item)
                                     <div class="flex gap-3">
                                         <div class="w-16 h-16 bg-gray-100 rounded flex-shrink-0 overflow-hidden">
-                                            <img src="{{ $item->productVariant->photo ?? $item->productVariant->product->photo ? Storage::url($item->productVariant->photo ?? $item->productVariant->product->photo) : 'https://placehold.co/100x100/F5F5F5/999999?text=No+Image' }}"
+                                            <img src="{{ $item->productVariant->photo ? asset('images/products/variants/' . $item->productVariant->photo) : $item->productVariant->product->photo_url }}"
                                                 alt="{{ $item->productVariant->product->name ?? 'Product' }}"
                                                 class="w-full h-full object-cover">
                                         </div>

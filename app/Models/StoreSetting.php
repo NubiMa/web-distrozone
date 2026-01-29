@@ -72,12 +72,80 @@ class StoreSetting extends Model
     
     public static function isOnlineStoreOpen()
     {
-        $openTime = static::get('online_open_time', '10:00');
-        $closeTime = static::get('online_close_time', '17:00');
-        $currentTime = now()->format('H:i');
-
+        // Get store timezone
+        $timezone = static::get('store_timezone', 'Asia/Jakarta');
+        
+        // Get the day-specific hours configuration
+        $onlineHours = static::get('online_hours', null);
+        
+        // Fallback to old simple open/close time if new structure doesn't exist
+        if (!$onlineHours || !is_array($onlineHours)) {
+            $openTime = static::get('online_open_time', '10:00');
+            $closeTime = static::get('online_close_time', '17:00');
+            $currentTime = now($timezone)->format('H:i');
+            return $currentTime >= $openTime && $currentTime <= $closeTime;
+        }
+        
+        // Get current day in store's timezone
+        $currentDay = now($timezone)->format('l');
+        
+        // Check if today exists in schedule
+        if (!isset($onlineHours[$currentDay])) {
+            return false;
+        }
+        
+        $todaySchedule = $onlineHours[$currentDay];
+        
+        // Check if store is closed today (handle both boolean and string "1"/1)
+        $isClosed = isset($todaySchedule['closed']) && 
+                    ($todaySchedule['closed'] === true || 
+                     $todaySchedule['closed'] === 1 || 
+                     $todaySchedule['closed'] === '1');
+        
+        if ($isClosed) {
+            return false;
+        }
+        
+        // Check current time against schedule in store's timezone
+        $currentTime = now($timezone)->format('H:i');
+        $openTime = $todaySchedule['start'] ?? '09:00';
+        $closeTime = $todaySchedule['end'] ?? '21:00';
+        
         return $currentTime >= $openTime && $currentTime <= $closeTime;
     }
+    
+    /**
+     * Get human-readable store status message
+     */
+    public static function getStoreStatusMessage()
+    {
+        if (static::isOnlineStoreOpen()) {
+            return 'Toko sedang buka';
+        }
+        
+        $timezone = static::get('store_timezone', 'Asia/Jakarta');
+        $onlineHours = static::get('online_hours', null);
+        $currentDay = now($timezone)->format('l');
+        
+        if ($onlineHours && isset($onlineHours[$currentDay])) {
+            $todaySchedule = $onlineHours[$currentDay];
+            
+            if (isset($todaySchedule['closed']) && 
+                ($todaySchedule['closed'] === true || 
+                 $todaySchedule['closed'] === 1 || 
+                 $todaySchedule['closed'] === '1')) {
+                return 'Toko tutup hari ini';
+            }
+            
+            $openTime = $todaySchedule['start'] ?? '09:00';
+            $closeTime = $todaySchedule['end'] ?? '21:00';
+            
+            return "Toko sedang tutup. Jam operasional hari ini: {$openTime} - {$closeTime}";
+        }
+        
+        return 'Toko sedang tutup';
+    }
+
 
     public static function isOfflineStoreOpen()
     {

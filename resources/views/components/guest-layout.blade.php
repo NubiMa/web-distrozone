@@ -35,6 +35,10 @@
         @unless (request()->routeIs('settings*'))
             <x-chat-widget />
         @endunless
+
+        <!-- Global Notifications -->
+        <x-toast-notification />
+        <x-confirm-modal />
     </div>
 </body>
 

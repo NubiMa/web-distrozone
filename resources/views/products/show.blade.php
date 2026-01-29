@@ -39,8 +39,9 @@
                 <!-- Image Gallery -->
                 <div class="space-y-4">
                     <div class="aspect-[4/5] bg-bg-secondary w-full overflow-hidden border border-border group relative">
-                        <img :src="selectedVariant && selectedVariant.photo ? '/storage/' + selectedVariant.photo :
-                            '{{ $product->photo ? Storage::url($product->photo) : 'https://placehold.co/400x500/F5F5F5/111111?text=No+Image' }}'"
+                        <img :src="selectedVariant && selectedVariant.photo ? '/images/products/variants/' + selectedVariant
+                            .photo :
+                            '{{ $product->photo_url }}'"
                             alt="{{ $product->name }}"
                             class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700">
                     </div>

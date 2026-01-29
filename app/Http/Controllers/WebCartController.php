@@ -30,7 +30,7 @@ class WebCartController extends Controller
                 'color' => $variant->color,
                 'quantity' => $item->quantity,
                 'price' => $variant->price,
-                'image' => $variant->photo ?? $variant->product->photo
+                'image' => $variant->photo ? asset('images/products/variants/' . $variant->photo) : $variant->product->photo_url
             ];
             $total += $variant->price * $item->quantity;
         }

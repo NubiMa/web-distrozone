@@ -30,8 +30,19 @@ return new class extends Migration
             }
         }
         
-        // Add correct foreign key
+        
+        // Add correct foreign key only if it doesn't already exist
         Schema::table('wishlists', function (Blueprint $table) {
+            if (!Schema::hasColumn('wishlists', 'product_id')) {
+                return; // Column doesn't exist, skip
+            }
+            // Drop and recreate to ensure it's correct
+            try {
+                $table->dropForeign(['product_id']);
+            } catch (\Exception $e) {
+                // Foreign key doesn't exist, continue
+            }
+            
             $table->foreign('product_id')
                   ->references('id')
                   ->on('products')

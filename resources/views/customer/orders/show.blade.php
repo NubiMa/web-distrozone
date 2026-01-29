@@ -202,21 +202,44 @@
                             </svg>
                             Metode Pembayaran
                         </h3>
-                        <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
-                            <p class="text-xs text-gray-500 uppercase tracking-widest font-bold mb-2">Transfer Bank</p>
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="text-gray-600 text-sm">Bank:</span>
-                                <span class="font-bold text-gray-900">BCA</span>
+
+                        @if ($order->payment_method === 'transfer')
+                            <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                                <p class="text-xs text-gray-500 uppercase tracking-widest font-bold mb-2">Transfer Bank
+                                </p>
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="text-gray-600 text-sm">Bank:</span>
+                                    <span
+                                        class="font-bold text-gray-900">{{ $storeSettings['bank_name'] ?? 'BCA' }}</span>
+                                </div>
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="text-gray-600 text-sm">No. Rekening:</span>
+                                    <span
+                                        class="font-bold text-gray-900">{{ $storeSettings['bank_account_number'] ?? '1234567890' }}</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600 text-sm">Atas Nama:</span>
+                                    <span
+                                        class="font-bold text-gray-900">{{ $storeSettings['bank_account_holder'] ?? 'DistroZone Official' }}</span>
+                                </div>
                             </div>
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="text-gray-600 text-sm">No. Rekening:</span>
-                                <span class="font-bold text-gray-900">1234567890</span>
+                        @elseif($order->payment_method === 'qris')
+                            <div class="bg-gray-50 rounded-lg p-4 border border-gray-100 text-center">
+                                <p class="text-xs text-gray-500 uppercase tracking-widest font-bold mb-3">QRIS</p>
+                                <div class="inline-block bg-white p-3 rounded-lg shadow-sm">
+                                    <img src="{{ asset($storeSettings['qris_image'] ?? 'images/payment/qris-distrozone.png') }}"
+                                        alt="QRIS DistroZone" class="w-32 h-auto mx-auto">
+                                </div>
+                                <p class="text-xs text-gray-600 mt-3">Scan QR Code untuk pembayaran</p>
                             </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-gray-600 text-sm">Atas Nama:</span>
-                                <span class="font-bold text-gray-900">DistroZone Official</span>
+                        @else
+                            <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                                <p class="text-xs text-gray-500 uppercase tracking-widest font-bold mb-2">
+                                    {{ strtoupper($order->payment_method) }}</p>
+                                <p class="text-sm text-gray-600">Metode pembayaran:
+                                    {{ ucfirst($order->payment_method) }}</p>
                             </div>
-                        </div>
+                        @endif
                     </div>
 
                     <!-- Order Summary -->

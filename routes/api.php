@@ -10,7 +10,7 @@ use App\Http\Controllers\Admin\AdminSettingsController;
 use App\Http\Controllers\Kasir\KasirProductController;
 use App\Http\Controllers\Kasir\KasirTransactionController;
 use App\Http\Controllers\Kasir\KasirReportController;
-use App\Http\Controllers\Customer\CustomerProductController;
+// use App\Http\Controllers\Customer\CustomerProductController;
 use App\Http\Controllers\Customer\CustomerOrderController;
 
 /*
@@ -32,12 +32,21 @@ use App\Http\Controllers\Customer\CustomerOrderController;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-// Public Product Catalog (Guest can browse)
-Route::prefix('products')->group(function () {
-    Route::get('/', [CustomerProductController::class, 'index']);
-    Route::get('/{id}', [CustomerProductController::class, 'show']);
-    Route::get('/filters/options', [CustomerProductController::class, 'filterOptions']);
+// Store Status (for polling)
+Route::get('/store-status', function () {
+    return response()->json([
+        'is_open' => \App\Models\StoreSetting::isOnlineStoreOpen(),
+        'message' => \App\Models\StoreSetting::getStoreStatusMessage(),
+    ]);
 });
+
+// Public Product Catalog (Guest can browse)
+// Note: Using web routes for product browsing instead of API
+// Route::prefix('products')->group(function () {
+//     Route::get('/', [CustomerProductController::class, 'index']);
+//     Route::get('/{id}', [CustomerProductController::class, 'show']);
+//     Route::get('/filters/options', [CustomerProductController::class, 'filterOptions']);
+// });
 
 // Shipping Information (Guest can check shipping rates)
 Route::prefix('shipping')->group(function () {
@@ -122,11 +131,12 @@ Route::middleware(['auth:sanctum,web', 'kasir'])->prefix('kasir')->group(functio
 Route::middleware(['auth:sanctum', 'customer', 'operational.hours'])->prefix('customer')->group(function () {
     
     // Product Browsing (same as public but authenticated)
-    Route::prefix('products')->group(function () {
-        Route::get('/', [CustomerProductController::class, 'index']);
-        Route::get('/{id}', [CustomerProductController::class, 'show']);
-        Route::get('/filters/options', [CustomerProductController::class, 'filterOptions']);
-    });
+    // Note: Using web routes for product browsing instead of API
+    // Route::prefix('products')->group(function () {
+    //     Route::get('/', [CustomerProductController::class, 'index']);
+    //     Route::get('/{id}', [CustomerProductController::class, 'show']);
+    //     Route::get('/filters/options', [CustomerProductController::class, 'filterOptions']);
+    // });
     
     // Orders
     Route::prefix('orders')->group(function () {

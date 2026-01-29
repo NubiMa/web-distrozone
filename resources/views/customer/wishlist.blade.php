@@ -52,7 +52,7 @@
                             <div
                                 class="aspect-square bg-gray-50 rounded-lg overflow-hidden mb-4 flex items-center justify-center relative">
                                 @if ($product->photo)
-                                    <img src="{{ Storage::url($product->photo) }}" alt="{{ $product->name }}"
+                                    <img src="{{ $product->photo_url }}" alt="{{ $product->name }}"
                                         class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500">
                                 @else
                                     <div class="flex flex-col items-center justify-center text-gray-300">

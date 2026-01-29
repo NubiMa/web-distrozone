@@ -49,8 +49,33 @@ class WebCheckoutController extends Controller
 
         // Get shipping rates and store settings
         $shippingRates = ShippingRate::all();
-        $storeSettings = StoreSetting::whereIn('key', ['qris_image', 'bank_name', 'bank_account_number', 'bank_account_holder'])
-            ->pluck('value', 'key');
+        
+        // Load payment methods from database
+        $paymentMethodsSetting = StoreSetting::where('key', 'payment_methods')->first();
+        $paymentMethods = [];
+        
+        if ($paymentMethodsSetting && $paymentMethodsSetting->value) {
+            $decoded = json_decode($paymentMethodsSetting->value, true);
+            // Filter only enabled payment methods
+            $paymentMethods = collect($decoded)->filter(function ($method) {
+                return isset($method['enabled']) && $method['enabled'] === true;
+            })->map(function ($method) {
+                // Normalize QRIS image URL
+                if ($method['type'] === 'qris' && isset($method['details']['image_path'])) {
+                    $path = $method['details']['image_path'];
+                    if (str_starts_with($path, 'images/')) {
+                        $method['details']['image_url'] = asset($path);
+                    } else {
+                        // Fallback for old storage-based images
+                        $method['details']['image_url'] = \Illuminate\Support\Facades\Storage::url($path);
+                    }
+                }
+                return $method;
+            })->values()->toArray();
+        }
+        
+        // Group payment methods by type for easier rendering
+        $paymentsByType = collect($paymentMethods)->groupBy('type')->toArray();
 
         // Calculate totals
         $subtotal = $cartItems->sum(function ($item) {
@@ -61,17 +86,20 @@ class WebCheckoutController extends Controller
         // Calculate weight (1kg = max 3 shirts, per brief)
         $weightKg = ceil($totalQuantity / 3);
 
-        return view('checkout.index', compact('cartItems', 'addresses', 'primaryAddress', 'shippingRates', 'subtotal', 'totalQuantity', 'weightKg', 'storeSettings'));
+        return view('checkout.index', compact('cartItems', 'addresses', 'primaryAddress', 'shippingRates', 'subtotal', 'totalQuantity', 'weightKg', 'paymentMethods', 'paymentsByType'));
     }
 
     public function store(Request $request)
     {
         $user = Auth::user();
         
+        
         $request->validate([
             'address_id' => 'required|exists:addresses,id',
             'shipping_destination' => 'required|string',
-            'payment_method' => 'required|in:transfer,qris',
+            'payment_method_id' => 'required|integer|min:0',
+            'payment_method_type' => 'required|string|in:bank_transfer,qris,e_wallet',
+            'payment_method_name' => 'required|string',
             'payment_proof' => 'required|image|mimes:jpeg,png,jpg|max:5120',
         ]);
 
@@ -124,7 +152,7 @@ class WebCheckoutController extends Controller
                 'transaction_code' => $transactionCode,
                 'user_id' => $user->id,
                 'transaction_type' => 'online',
-                'payment_method' => $request->payment_method,
+                'payment_method' => $request->payment_method_type . ': ' . $request->payment_method_name,
                 'payment_status' => 'pending',
                 'payment_proof' => $proofPath,
                 'subtotal' => $subtotal,

@@ -1,6 +1,8 @@
 <x-admin-layout>
     <x-slot name="head">
         <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+        <!-- ntc.js for color naming -->
+        <script src="{{ asset('js/ntc.js?v=3') }}"></script>
     </x-slot>
 
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12" x-data="productForm({{ $product->variants->toJson() }})">
@@ -34,16 +36,6 @@
             <!-- Product Info Card -->
             <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
                 <h2 class="text-lg font-bold text-gray-900 mb-4">Informasi Produk</h2>
-
-                <!-- Current Photo -->
-                @if ($product->photo)
-                    <div class="mb-4">
-                        <label class="block text-sm font-bold text-gray-700 mb-2">Foto Saat Ini</label>
-                        <img src="{{ $product->photo_url }}" alt="{{ $product->name }}"
-                            class="w-32 h-32 object-cover rounded-lg">
-                    </div>
-                @endif
-
                 <!-- Name -->
                 <div class="mb-4">
                     <label for="name" class="block text-sm font-bold text-gray-700 mb-2">Nama Produk *</label>
@@ -89,18 +81,7 @@
                     <label for="description" class="block text-sm font-bold text-gray-700 mb-2">Deskripsi</label>
                     <textarea name="description" id="description" rows="3"
                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">{{ old('description', $product->description) }}</textarea>
-                </div>
-
-                <!-- Photo -->
-                <div class="mb-4">
-                    <label for="photo" class="block text-sm font-bold text-gray-700 mb-2">Update Foto Produk</label>
-                    <input type="file" name="photo" id="photo" accept="image/jpeg,image/png,image/jpg"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
-                    <p class="text-xs text-gray-500 mt-1">Format: JPG, PNG. Maksimal 2MB. Kosongkan jika tidak ingin
-                        mengubah</p>
-                </div>
-
-                <!-- Status -->
+                </div><!-- Status -->
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2">Status Produk</label>
                     <div class="flex items-center gap-4">
@@ -145,14 +126,26 @@
                             <!-- Hidden ID field for existing variants -->
                             <input type="hidden" :name="'variants[' + index + '][id]'" x-model="variant.id">
 
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                <div>
+                            <div class="grid grid-cols-1 md:grid-cols-6 gap-3">
+                                <div class="md:col-span-2">
                                     <label class="block text-xs font-bold text-gray-700 mb-1">Warna *</label>
-                                    <input type="text" :name="'variants[' + index + '][color]'"
-                                        x-model="variant.color" required
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500">
+                                    <div class="flex gap-2">
+                                        <!-- Color Picker -->
+                                        <input type="color" x-model="variant.color_hex" x-init="$watch('variant.color_hex', (val) => updateColorName(index))"
+                                            @input="updateColorName(index)" @change="updateColorName(index)"
+                                            class="w-12 h-10 rounded border border-gray-300 cursor-pointer flex-shrink-0">
+                                        <!-- Auto-generated Color Name (readonly) -->
+                                        <input type="text" x-model="variant.color" readonly
+                                            class="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-orange-500"
+                                            placeholder="Pilih warna">
+                                    </div>
+                                    <!-- Hidden inputs for form submission -->
+                                    <input type="hidden" :name="'variants[' + index + '][color]'"
+                                        x-model="variant.color">
+                                    <input type="hidden" :name="'variants[' + index + '][color_hex]'"
+                                        x-model="variant.color_hex">
                                 </div>
-                                <div>
+                                <div class="md:col-span-1">
                                     <label class="block text-xs font-bold text-gray-700 mb-1">Ukuran *</label>
                                     <select :name="'variants[' + index + '][size]'" x-model="variant.size" required
                                         class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500">
@@ -168,18 +161,46 @@
                                         <option value="5XL">5XL</option>
                                     </select>
                                 </div>
-                                <div>
+                                <div class="md:col-span-1">
                                     <label class="block text-xs font-bold text-gray-700 mb-1">Harga *</label>
                                     <input type="number" :name="'variants[' + index + '][price]'"
-                                        x-model="variant.price" required min="0"
+                                        x-model="variant.price" required min="0" placeholder="0"
                                         class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500">
                                 </div>
-                                <div>
+                                <div class="md:col-span-2">
                                     <label class="block text-xs font-bold text-gray-700 mb-1">Stok *</label>
                                     <input type="number" :name="'variants[' + index + '][stock]'"
-                                        x-model="variant.stock" required min="0"
+                                        x-model="variant.stock" required min="0" placeholder="0"
                                         class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500">
                                 </div>
+                            </div>
+
+                            <!-- Variant Photo Upload -->
+                            <div class="mt-3">
+                                <label class="block text-xs font-bold text-gray-700 mb-1">Foto Varian
+                                    (Opsional)</label>
+
+                                <!-- Current Photo Preview -->
+                                <template x-if="variant.photo && !variant.photo_preview">
+                                    <div class="mb-2">
+                                        <img :src="'/images/products/variants/' + variant.photo" alt="Variant photo"
+                                            class="h-20 w-20 object-cover rounded-lg border border-gray-200">
+                                    </div>
+                                </template>
+
+                                <!-- New Photo Preview -->
+                                <template x-if="variant.photo_preview">
+                                    <div class="mb-2">
+                                        <img :src="variant.photo_preview" alt="Preview"
+                                            class="h-20 w-20 object-cover rounded-lg border border-gray-200">
+                                    </div>
+                                </template>
+
+                                <input type="file" :name="'variants[' + index + '][photo]'"
+                                    accept="image/jpeg,image/png,image/jpg"
+                                    @change="previewVariantImage(index, $event)"
+                                    class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100">
+                                <p class="text-xs text-gray-500 mt-1">JPG, PNG. Maks 2MB</p>
                             </div>
                         </div>
                     </template>
@@ -204,22 +225,71 @@
         <script>
             function productForm(existingVariants) {
                 return {
-                    variants: existingVariants.length > 0 ? existingVariants : [{
+                    variants: existingVariants.length > 0 ? existingVariants.map(v => ({
+                        ...v,
+                        color_hex: v.color_hex || '#000000', // Preserve existing hex or default
+                        photo_preview: null
+                    })) : [{
                         color: '',
+                        color_hex: '#000000',
                         size: '',
                         price: '',
-                        stock: ''
+                        stock: '',
+                        photo: null,
+                        photo_preview: null
                     }],
+                    init() {
+                        if (typeof ntc !== 'undefined') {
+                            ntc.init();
+                        } else {
+                            console.warn('ntc.js not loaded');
+                        }
+
+                        // Watch for changes in variants to update color names automatically
+                        this.$watch('variants', (variants) => {
+                            variants.forEach((variant, index) => {
+                                if (variant.color_hex && !variant.color) {
+                                    this.updateColorName(index);
+                                }
+                            });
+                        });
+                    },
                     addVariant() {
                         this.variants.push({
                             color: '',
+                            color_hex: '#000000',
                             size: '',
                             price: '',
-                            stock: ''
+                            stock: '',
+                            photo: null,
+                            photo_preview: null
                         });
                     },
                     removeVariant(index) {
                         this.variants.splice(index, 1);
+                    },
+                    updateColorName(index) {
+                        const hex = this.variants[index].color_hex;
+                        if (hex) {
+                            if (typeof ntc !== 'undefined') {
+                                const match = ntc.name(hex);
+                                this.variants[index].color = match[1]; // Set color name
+                            } else {
+                                // Fallback if library failed to load
+                                this.variants[index].color = hex + ' (Manual)';
+                                console.warn('ntc.js not loaded, using hex code');
+                            }
+                        }
+                    },
+                    previewVariantImage(index, event) {
+                        const file = event.target.files[0];
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onload = (e) => {
+                                this.variants[index].photo_preview = e.target.result;
+                            };
+                            reader.readAsDataURL(file);
+                        }
                     }
                 }
             }

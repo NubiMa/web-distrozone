@@ -66,23 +66,21 @@ class AdminProductController extends Controller
             'type' => 'required|in:lengan panjang,lengan pendek',
             'description' => 'nullable|string',
             'base_price' => 'required|numeric|min:0',
-            'photo' => 'required|image|mimes:jpeg,png,jpg|max:2048',
             
             // Variants
             'variants' => 'required|array|min:1',
             'variants.*.color' => 'required|string|max:50',
+            'variants.*.color_hex' => 'required|string|max:7', // validate hex code
             'variants.*.size' => 'required|in:XS,S,M,L,XL,2XL,3XL,4XL,5XL',
             'variants.*.price' => 'required|numeric|min:0',
             'variants.*.stock' => 'required|integer|min:0',
+            'variants.*.photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         try {
             DB::beginTransaction();
 
-            // Handle photo upload
-            $photoPath = $request->file('photo')->store('products', 'public');
-
-            // Create product
+            // Create product (photo will be set from first variant)
             $product = Product::create([
                 'name' => $validated['name'],
                 'slug' => Str::slug($validated['name']),
@@ -90,20 +88,55 @@ class AdminProductController extends Controller
                 'type' => $validated['type'],
                 'description' => $validated['description'] ?? null,
                 'base_price' => $validated['base_price'],
-                'photo' => $photoPath,
+                'photo' => null, // Will be updated from first variant
                 'is_active' => true,
             ]);
 
+            $firstVariantPhoto = null;
+
             // Create variants
-            foreach ($validated['variants'] as $variantData) {
+            foreach ($validated['variants'] as $index => $variantData) {
+                // Handle variant photo upload
+                $variantPhoto = null;
+                if ($request->hasFile("variants.{$index}.photo")) {
+                    $file = $request->file("variants.{$index}.photo");
+                    
+                    // Generate unique filename
+                    $color = str_replace(' ', '_', $variantData['color']);
+                    $size = $variantData['size'];
+                    $filename = "{$product->id}_{$color}_{$size}_" . time() . '.' . $file->extension();
+                    
+                    // Ensure directory exists
+                    $directory = public_path('images/products/variants');
+                    if (!file_exists($directory)) {
+                        mkdir($directory, 0755, true);
+                    }
+                    
+                    // Move file to public directory
+                    $file->move($directory, $filename);
+                    $variantPhoto = $filename;
+                    
+                    // Store first variant photo for product thumbnail
+                    if ($index === 0 || $firstVariantPhoto === null) {
+                        $firstVariantPhoto = $filename;
+                    }
+                }
+                
                 ProductVariant::create([
                     'product_id' => $product->id,
                     'sku' => ProductVariant::generateSKU($product->id, $variantData['color'], $variantData['size']),
                     'color' => $variantData['color'],
+                    'color_hex' => $variantData['color_hex'] ?? null,
                     'size' => $variantData['size'],
                     'price' => $variantData['price'],
                     'stock' => $variantData['stock'],
+                    'photo' => $variantPhoto,
                 ]);
+            }
+
+            // Update product photo with first variant's photo
+            if ($firstVariantPhoto) {
+                $product->update(['photo' => $firstVariantPhoto]);
             }
 
             DB::commit();
@@ -144,32 +177,23 @@ class AdminProductController extends Controller
             'type' => 'required|in:lengan panjang,lengan pendek',
             'description' => 'nullable|string',
             'base_price' => 'required|numeric|min:0',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'is_active' => 'nullable|boolean',
             
             // Variants
             'variants' => 'required|array|min:1',
             'variants.*.id' => 'nullable|exists:product_variants,id',
             'variants.*.color' => 'required|string|max:50',
+            'variants.*.color_hex' => 'required|string|max:7', // validate hex code
             'variants.*.size' => 'required|in:XS,S,M,L,XL,2XL,3XL,4XL,5XL',
             'variants.*.price' => 'required|numeric|min:0',
             'variants.*.stock' => 'required|integer|min:0',
+            'variants.*.photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         try {
             DB::beginTransaction();
 
-            // Handle photo upload
-            $photoPath = $product->photo;
-            if ($request->hasFile('photo')) {
-                // Delete old photo
-                if ($product->photo) {
-                    Storage::disk('public')->delete($product->photo);
-                }
-                $photoPath = $request->file('photo')->store('products', 'public');
-            }
-
-            // Update product
+            // Update product (photo will be from first variant)
             $product->update([
                 'name' => $validated['name'],
                 'slug' => Str::slug($validated['name']),
@@ -177,7 +201,6 @@ class AdminProductController extends Controller
                 'type' => $validated['type'],
                 'description' => $validated['description'] ?? null,
                 'base_price' => $validated['base_price'],
-                'photo' => $photoPath,
                 'is_active' => $validated['is_active'] ?? $product->is_active,
             ]);
 
@@ -185,16 +208,48 @@ class AdminProductController extends Controller
             $existingVariantIds = [];
 
             // Update or create variants
-            foreach ($validated['variants'] as $variantData) {
+            foreach ($validated['variants'] as $index => $variantData) {
+                // Handle variant photo upload
+                $variantPhoto = null;
+                if ($request->hasFile("variants.{$index}.photo")) {
+                    $file = $request->file("variants.{$index}.photo");
+                    
+                    // Generate unique filename: {product_id}_{color}_{size}_{timestamp}.{extension}
+                    $color = str_replace(' ', '_', $variantData['color']);
+                    $size = $variantData['size'];
+                    $filename = "{$product->id}_{$color}_{$size}_" . time() . '.' . $file->extension();
+                    
+                    // Ensure directory exists
+                    $directory = public_path('images/products/variants');
+                    if (!file_exists($directory)) {
+                        mkdir($directory, 0755, true);
+                    }
+                    
+                    // Move file to public directory
+                    $file->move($directory, $filename);
+                    $variantPhoto = $filename;
+                }
+                
                 if (isset($variantData['id'])) {
                     // Update existing variant
                     $variant = ProductVariant::findOrFail($variantData['id']);
+                    
+                    // Delete old photo if new one uploaded
+                    if ($variantPhoto && $variant->photo) {
+                        $oldPhotoPath = public_path('images/products/variants/' . $variant->photo);
+                        if (file_exists($oldPhotoPath)) {
+                            unlink($oldPhotoPath);
+                        }
+                    }
+                    
                     $variant->update([
                         'color' => $variantData['color'],
+                        'color_hex' => $variantData['color_hex'] ?? null,
                         'size' => $variantData['size'],
                         'price' => $variantData['price'],
                         'stock' => $variantData['stock'],
                         'sku' => ProductVariant::generateSKU($product->id, $variantData['color'], $variantData['size']),
+                        'photo' => $variantPhoto ?? $variant->photo,
                     ]);
                     $existingVariantIds[] = $variant->id;
                 } else {
@@ -203,16 +258,42 @@ class AdminProductController extends Controller
                         'product_id' => $product->id,
                         'sku' => ProductVariant::generateSKU($product->id, $variantData['color'], $variantData['size']),
                         'color' => $variantData['color'],
+                        'color_hex' => $variantData['color_hex'] ?? null,
                         'size' => $variantData['size'],
                         'price' => $variantData['price'],
                         'stock' => $variantData['stock'],
+                        'photo' => $variantPhoto,
                     ]);
                     $existingVariantIds[] = $newVariant->id;
                 }
             }
 
-            // Delete variants that are not in the update
-            $product->variants()->whereNotIn('id', $existingVariantIds)->delete();
+            // Delete variants that are not in the update (and their photos)
+            $variantsToDelete = $product->variants()->whereNotIn('id', $existingVariantIds)->get();
+            foreach ($variantsToDelete as $variant) {
+                // Delete variant photo if exists
+                if ($variant->photo) {
+                    $photoPath = public_path('images/products/variants/' . $variant->photo);
+                    if (file_exists($photoPath)) {
+                        unlink($photoPath);
+                    }
+                }
+                $variant->delete();
+            }
+
+            // Update product photo to use first variant's photo (from form submission order)
+            // Get the first variant from the submitted form (index 0)
+            if (!empty($validated['variants'])) {
+                $firstVariantData = $validated['variants'][0];
+                
+                // Find the corresponding variant record
+                if (isset($firstVariantData['id'])) {
+                    $firstVariant = ProductVariant::find($firstVariantData['id']);
+                    if ($firstVariant && $firstVariant->photo) {
+                        $product->update(['photo' => $firstVariant->photo]);
+                    }
+                }
+            }
 
             DB::commit();
 
@@ -248,3 +329,6 @@ class AdminProductController extends Controller
         }
     }
 }
+
+
+

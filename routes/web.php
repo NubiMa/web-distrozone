@@ -25,11 +25,7 @@ Route::get('/debug-users', function () {
     return view('debug-users', compact('users'));
 });
 
-Route::get('/products', function () {
-    // Basic pagination for now, filtering logic to be added
-    $products = \App\Models\Product::paginate(12);
-    return view('products.index', compact('products'));
-});
+Route::get('/products', [App\Http\Controllers\ProductController::class, 'index'])->name('products.index');
 
 Route::get('/products/{id}', function ($id) {
     $product = \App\Models\Product::with(['variants' => function($query) {
@@ -51,6 +47,12 @@ Route::post('/login', [WebAuthController::class, 'login'])->name('login.post');
 Route::get('/register', [WebAuthController::class, 'showRegister'])->name('register');
 Route::post('/register', [WebAuthController::class, 'register'])->name('register.post');
 Route::post('/logout', [WebAuthController::class, 'logout'])->name('logout');
+
+// CSRF Token Refresh (for preventing 419 errors on long-open forms)
+Route::get('/csrf-token', function () {
+    return response()->json(['token' => csrf_token()]);
+});
+
 
 use App\Http\Controllers\WebCartController;
 use App\Http\Controllers\WebWishlistController;
@@ -158,7 +160,7 @@ Route::middleware(['auth'])->group(function () {
 
         // Customer Dashboard - fetch data
         $activeOrder = \App\Models\Transaction::where('user_id', $user->id)
-            ->whereIn('order_status', ['pending', 'processing', 'shipped']) // Active only
+            ->whereIn('order_status', ['pending', 'processing', 'shipped', 'completed']) // Active and completed
             ->latest()
             ->first();
 

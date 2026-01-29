@@ -100,23 +100,33 @@ class Product extends Model
         return $query;
     }
 
+    public function scopeInStock($query)
+    {
+        return $query->whereHas('variants', function($q) {
+            $q->where('stock', '>', 0)->where('is_active', true);
+        });
+    }
+
     /**
      * Accessors
      */
     public function getPhotoUrlAttribute()
     {
         if ($this->photo) {
-            return asset('storage/' . $this->photo);
+            // Photo is now stored as variant filename in public/images/products/variants/
+            return asset('images/products/variants/' . $this->photo);
         }
         return asset('images/default-product.png');
     }
 
     public function getPriceRangeAttribute()
     {
-        $prices = $this->variants()->pluck('price');
+        $prices = $this->variants()->pluck('price')->filter(function($value) {
+            return !is_null($value) && is_numeric($value);
+        });
 
         if ($prices->isEmpty()) {
-            return $this->base_price;
+            return 'Rp ' . number_format($this->base_price ?? 0, 0, ',', '.');
         }
 
         $min = $prices->min();

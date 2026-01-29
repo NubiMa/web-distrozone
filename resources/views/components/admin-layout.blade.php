@@ -33,6 +33,10 @@
     <!-- Footer -->
     <x-admin-footer />
 
+    <!-- Global Notifications -->
+    <x-toast-notification />
+    <x-confirm-modal />
+
     {{ $scripts ?? '' }}
 </body>
 

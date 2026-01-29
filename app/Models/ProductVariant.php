@@ -13,6 +13,7 @@ class ProductVariant extends Model
         'product_id',
         'sku',
         'color',
+        'color_hex',
         'size',
         'stock',
         'price',
@@ -37,22 +38,35 @@ class ProductVariant extends Model
 
         static::creating(function ($variant) {
             if (!$variant->sku) {
-                $variant->sku = self::generateSku($variant);
+                $variant->sku = self::generateSkuFromVariant($variant);
             }
         });
     }
 
     /**
-     * Generate SKU: PRD-{product_id}-{COLOR_CODE}-{SIZE}
+     * Generate SKU from variant object: PRD-{product_id}-{COLOR_CODE}-{SIZE}
      * Example: PRD-001-BLK-M
      */
-    protected static function generateSku($variant)
+    protected static function generateSkuFromVariant($variant)
     {
         $productId = str_pad($variant->product_id, 3, '0', STR_PAD_LEFT);
         $colorCode = strtoupper(substr($variant->color, 0, 3));
         $size = strtoupper($variant->size);
 
         return "PRD-{$productId}-{$colorCode}-{$size}";
+    }
+
+    /**
+     * Public method to generate SKU from individual parameters
+     * Used by controllers when creating/updating products
+     */
+    public static function generateSKU($productId, $color, $size)
+    {
+        $productIdPadded = str_pad($productId, 3, '0', STR_PAD_LEFT);
+        $colorCode = strtoupper(substr($color, 0, 3));
+        $sizeUpper = strtoupper($size);
+
+        return "PRD-{$productIdPadded}-{$colorCode}-{$sizeUpper}";
     }
 
     /**

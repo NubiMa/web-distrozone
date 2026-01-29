@@ -19,8 +19,7 @@
     <!-- Image -->
     <div class="aspect-[4/5] overflow-hidden bg-gray-100 relative">
         <a href="{{ url('/products/' . $product->id) }}">
-            <img src="{{ $product->image ? Storage::url($product->image) : 'https://placehold.co/400x500/F5F5F5/111111?text=No+Image' }}"
-                alt="{{ $product->name }}"
+            <img src="{{ $product->photo_url }}" alt="{{ $product->name }}"
                 class="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105">
         </a>
 

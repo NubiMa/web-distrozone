@@ -25,6 +25,9 @@
 
         <!-- Main Content with Top Padding -->
         <main class="pt-24 pb-12">
+            <!-- Store Closed Warning Banner -->
+            <x-store-closed-banner />
+
             {{ $slot }}
         </main>
 
@@ -32,12 +35,9 @@
     </div>
 
     <!-- Flash Messages -->
-    @if (session('success'))
-        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)"
-            class="fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-bounce">
-            {{ session('success') }}
-        </div>
-    @endif
+    <!-- Global Notifications -->
+    <x-toast-notification />
+    <x-confirm-modal />
 
     <!-- Chat Widget (Everywhere except if explicitly hidden) -->
     @unless (request()->routeIs('settings*'))

@@ -70,7 +70,7 @@
                 @foreach ($featuredProducts->take(4) as $index => $product)
                     <div class="group cursor-pointer">
                         <div class="relative bg-gray-100 aspect-[3/4] overflow-hidden mb-4 rounded-sm">
-                            <img src="{{ $product->photo ?? 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?q=80&w=1000&auto=format&fit=crop' }}"
+                            <img src="{{ $product->photo_url }}"
                                 class="w-full h-full object-cover object-center transform group-hover:scale-110 transition-transform duration-700"
                                 alt="{{ $product->name }}">
 

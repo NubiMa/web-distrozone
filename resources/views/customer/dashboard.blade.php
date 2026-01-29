@@ -10,39 +10,44 @@
                         <div class="flex-1 w-full">
                             <div class="flex items-center gap-3 mb-2">
                                 <span
-                                    class="bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 uppercase tracking-wider rounded-sm">
-                                    {{ strtoupper($activeOrder->status) }}
+                                    class="text-xs font-bold px-2 py-0.5 uppercase tracking-wider rounded-sm
+                                    {{ $activeOrder->order_status == 'pending' ? 'bg-yellow-100 text-yellow-800' : '' }}
+                                    {{ $activeOrder->order_status == 'processing' ? 'bg-blue-100 text-blue-800' : '' }}
+                                    {{ $activeOrder->order_status == 'shipped' ? 'bg-indigo-100 text-indigo-800' : '' }}
+                                    {{ $activeOrder->order_status == 'completed' ? 'bg-green-100 text-green-800' : '' }}
+                                    {{ $activeOrder->order_status == 'cancelled' ? 'bg-red-100 text-red-800' : '' }}">
+                                    {{ strtoupper($activeOrder->order_status) }}
                                 </span>
                                 <span class="text-gray-400 text-xs">Update terakhir:
                                     {{ $activeOrder->updated_at->diffForHumans() }}</span>
                             </div>
 
-                            <h2 class="text-2xl font-bold text-primary mb-1">Pesanan #{{ $activeOrder->invoice_code }}
+                            <h2 class="text-2xl font-bold text-primary mb-1">Pesanan
+                                #{{ $activeOrder->transaction_code }}
                                 sedang diproses!</h2>
-                            <p class="text-gray-500 mb-6 text-sm">Diperkirakan tiba dalam 3-5 hari kerja. • <a
-                                    href="#" class="text-accent underline">Lihat Resi</a></p>
+                            <p class="text-gray-500 mb-6 text-sm">Diperkirakan tiba dalam 3-5 hari kerja.</p>
 
                             <!-- Progress Bar -->
                             <div class="relative pt-4 pb-2">
                                 <div
                                     class="flex mb-2 items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-widest">
                                     <span
-                                        class="{{ in_array($activeOrder->status, ['pending', 'paid', 'shipping', 'completed']) ? 'text-accent' : '' }}">Diproses</span>
+                                        class="{{ in_array($activeOrder->order_status, ['pending', 'processing', 'shipped', 'completed']) ? 'text-accent' : '' }}">Proses</span>
                                     <span
-                                        class="{{ in_array($activeOrder->status, ['shipping', 'completed']) ? 'text-accent' : '' }}">Dikirim</span>
+                                        class="{{ in_array($activeOrder->order_status, ['processing', 'shipped', 'completed']) ? 'text-accent' : '' }}">Terverifikasi</span>
                                     <span
-                                        class="{{ $activeOrder->status == 'completed' ? 'text-accent' : '' }}">Diterima</span>
+                                        class="{{ in_array($activeOrder->order_status, ['shipped', 'completed']) ? 'text-accent' : '' }}">Dikirim</span>
                                 </div>
                                 <div class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-gray-100">
                                     @php
                                         $width = '10%';
-                                        if ($activeOrder->status == 'paid') {
+                                        if ($activeOrder->order_status == 'pending') {
                                             $width = '33%';
                                         }
-                                        if ($activeOrder->status == 'shipping') {
+                                        if ($activeOrder->order_status == 'processing') {
                                             $width = '66%';
                                         }
-                                        if ($activeOrder->status == 'completed') {
+                                        if (in_array($activeOrder->order_status, ['shipped', 'completed'])) {
                                             $width = '100%';
                                         }
                                     @endphp
@@ -52,8 +57,8 @@
                                 </div>
                             </div>
 
-                            <div class="flex gap-3 mt-4">
-                                <button
+                            <div class="flex flex-wrap gap-3 mt-4">
+                                <a href="{{ route('orders.show', $activeOrder->id) }}"
                                     class="bg-gray-100 hover:bg-gray-200 text-primary px-6 py-2.5 rounded-sm text-sm font-bold uppercase tracking-wide transition-colors flex items-center gap-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -63,26 +68,37 @@
                                         </path>
                                     </svg>
                                     Lacak Pesanan
-                                </button>
-                                <button
+                                </a>
+                                <a href="{{ route('orders.index') }}"
                                     class="bg-white border border-gray-200 hover:border-gray-400 text-gray-600 px-6 py-2.5 rounded-sm text-sm font-bold uppercase tracking-wide transition-colors flex items-center gap-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                                            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10">
                                         </path>
                                     </svg>
-                                    Bantuan
-                                </button>
+                                    Lihat Semua Pesanan
+                                </a>
                             </div>
                         </div>
 
-                        <!-- Mini Product Preview (Visual only) -->
-                        <div class="w-full md:w-64 h-40 bg-gray-100 rounded-lg overflow-hidden relative">
-                            <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=1000&auto=format&fit=crop"
-                                class="w-full h-full object-cover opacity-80" alt="Order Preview">
-                            <div
-                                class="absolute bottom-2 left-2 bg-white px-2 py-1 text-[10px] font-bold rounded-sm shadow-sm">
-                                {{ $activeOrder->details->count() }} Item</div>
+                        <!-- Mini Product Preview -->
+                        <div class="w-32 h-32 md:w-48 md:h-48 bg-gray-100 rounded-lg overflow-hidden relative shrink-0">
+                            @if ($activeOrder->details->first())
+                                <img src="{{ $activeOrder->details->first()->productVariant->photo ? asset('images/products/variants/' . $activeOrder->details->first()->productVariant->photo) : $activeOrder->details->first()->productVariant->product->photo_url }}"
+                                    class="w-full h-full object-cover" alt="Order Preview">
+                                <div
+                                    class="absolute bottom-2 left-2 bg-white px-2 py-1 text-[10px] font-bold rounded-sm shadow-sm">
+                                    {{ $activeOrder->details->count() }} Item
+                                </div>
+                            @else
+                                <div class="w-full h-full flex items-center justify-center text-gray-400 bg-gray-200">
+                                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                        </path>
+                                    </svg>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -90,7 +106,7 @@
 
             <!-- 2. Header & Recommendations -->
             <div class="mb-12">
-                <h1 class="text-4xl font-bold font-display text-primary mb-2">Selamat Datang Kembali,
+                <h1 class="text-4xl font-bold font-display text-primary mb-2">Halo,
                     {{ explode(' ', Auth::user()->name)[0] }}</h1>
                 <div class="flex justify-between items-end mb-8">
                     <p class="text-gray-500">Koleksi terbaru dipilih khusus untukmu berdasarkan gaya terakhirmu.</p>
