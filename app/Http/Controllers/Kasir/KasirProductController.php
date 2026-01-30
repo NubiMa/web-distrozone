@@ -28,6 +28,10 @@ class KasirProductController extends Controller
             ->latest()
             ->paginate(12);
 
+        if ($request->ajax()) {
+            return view('kasir.partials.inventory_list', compact('products', 'search'))->render();
+        }
+
         return view('kasir.inventory', compact('products', 'search'));
     }
 

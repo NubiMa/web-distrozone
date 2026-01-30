@@ -360,7 +360,7 @@
                 selectedTypes: [],
                 selectedColors: [],
                 selectedPriceRange: '',
-                search: '',
+                search: '{{ $searchQuery }}',
                 sort: 'newest',
 
                 // UI state

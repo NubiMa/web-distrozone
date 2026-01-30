@@ -100,12 +100,14 @@
                         </svg>
                         <h2 class="text-lg font-bold text-primary">Alamat Pengiriman</h2>
                     </div>
-                    <button class="text-gray-400 hover:text-accent"><svg class="w-4 h-4" fill="none"
+                    {{-- <button class="text-gray-400 hover:text-accent">
+                        <svg class="w-4 h-4" fill="none"
                             stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z">
                             </path>
-                        </svg></button>
+                        </svg>
+                    </button> --}}
                 </div>
 
                 <div class="bg-gray-50 p-4 rounded-sm border border-gray-100 flex gap-4">
@@ -151,7 +153,9 @@
             <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
                 <div class="p-6 border-b border-gray-100 flex justify-between items-center">
                     <h2 class="text-lg font-bold text-primary">Riwayat Pesanan Terbaru</h2>
-                    <a href="#" class="text-accent text-sm font-bold flex items-center gap-1 hover:underline">
+
+                    <a href="{{ route('orders.index') }}"
+                        class="text-accent text-sm font-bold flex items-center gap-1 hover:underline">
                         Lihat Semua <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M17 8l4 4m0 0l-4 4m4-4H3"></path>

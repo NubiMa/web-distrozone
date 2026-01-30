@@ -3,21 +3,21 @@
         <!-- Header -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
             <div>
-                <nav class="flex text-sm text-gray-500 mb-1">
+                {{-- <nav class="flex text-sm text-gray-500 mb-1">
                     <span class="hover:text-gray-700 cursor-pointer">Inventory Management</span>
                     <span class="mx-2">/</span>
                     <span class="text-gray-900 font-medium">Kaos Inventory</span>
-                </nav>
-                <h1 class="text-3xl font-bold text-gray-900">Kaos Inventory</h1>
-                <p class="text-gray-500 mt-1">Manage your streetwear products, track real-time stock levels, and update
-                    pricing.</p>
+                </nav> --}}
+                <h1 class="text-3xl font-bold text-gray-900">Inventaris Kaos</h1>
+                <p class="text-gray-500 mt-1">Kelola produk streetwear Anda, lacak level stok real-time, dan perbarui
+                    harga.</p>
             </div>
             <a href="{{ route('admin.products.create') }}"
                 class="px-6 py-3 bg-orange-600 text-white font-bold rounded-xl hover:bg-orange-700 transition-colors flex items-center gap-2 shadow-lg shadow-orange-600/20">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
-                Add New Product
+                Tambah Produk Baru
             </a>
         </div>
 
@@ -39,7 +39,7 @@
                 <form method="GET" action="{{ route('admin.products.index') }}">
                     <div class="relative">
                         <input type="text" name="search" value="{{ request('search') }}"
-                            placeholder="Search by name, SKU, or brand..."
+                            placeholder="Cari berdasarkan nama, SKU, atau merek..."
                             class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all">
                         <svg class="w-5 h-5 text-gray-400 absolute left-3 top-3.5" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
@@ -52,7 +52,7 @@
             <div class="flex gap-3 w-full md:w-auto">
                 <select name="brand" onchange="this.form.submit()"
                     class="px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm font-medium text-gray-700">
-                    <option value="">All Brands</option>
+                    <option value="">Semua Merek</option>
                     @foreach ($brands as $brand)
                         <option value="{{ $brand }}" {{ request('brand') == $brand ? 'selected' : '' }}>
                             {{ $brand }}</option>
@@ -61,11 +61,11 @@
 
                 <select name="type" onchange="this.form.submit()"
                     class="px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm font-medium text-gray-700">
-                    <option value="">All Types</option>
-                    <option value="lengan panjang" {{ request('type') == 'lengan panjang' ? 'selected' : '' }}>Long
-                        Sleeve</option>
-                    <option value="lengan pendek" {{ request('type') == 'lengan pendek' ? 'selected' : '' }}>Short
-                        Sleeve</option>
+                    <option value="">Semua Tipe</option>
+                    <option value="lengan panjang" {{ request('type') == 'lengan panjang' ? 'selected' : '' }}>Lengan
+                        Panjang</option>
+                    <option value="lengan pendek" {{ request('type') == 'lengan pendek' ? 'selected' : '' }}>Lengan
+                        Pendek</option>
                 </select>
                 </form>
             </div>
@@ -78,14 +78,14 @@
                     <thead class="bg-orange-50/50 border-b border-gray-100">
                         <tr>
                             <th class="px-6 py-4 text-left text-xs font-bold text-orange-800 uppercase tracking-wider">
-                                Product</th>
+                                Produk</th>
                             <th class="px-6 py-4 text-left text-xs font-bold text-orange-800 uppercase tracking-wider">
                                 Merek</th>
                             <th class="px-6 py-4 text-left text-xs font-bold text-orange-800 uppercase tracking-wider">
-                                Type</th>
+                                Tipe</th>
                             <th
                                 class="px-6 py-4 text-center text-xs font-bold text-orange-800 uppercase tracking-wider">
-                                Variants</th>
+                                Varian</th>
                             <th class="px-6 py-4 text-right text-xs font-bold text-orange-800 uppercase tracking-wider">
                                 Harga</th>
                             <th
@@ -93,7 +93,7 @@
                                 Total Stok</th>
                             <th
                                 class="px-6 py-4 text-center text-xs font-bold text-orange-800 uppercase tracking-wider">
-                                Action</th>
+                                Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
@@ -137,8 +137,8 @@
 
                             {{-- Variants Summary --}}
                             <td class="px-6 py-4 whitespace-nowrap text-center text-xs text-gray-500">
-                                {{ count($product->available_colors) }} Colors &bull;
-                                {{ count($product->available_sizes) }} Sizes
+                                {{ count($product->available_colors) }} Warna &bull;
+                                {{ count($product->available_sizes) }} Ukuran
                             </td>
 
                             {{-- Price --}}
@@ -151,16 +151,16 @@
                                 @if ($product->total_stock > 10)
                                     <span
                                         class="px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
-                                        {{ $product->total_stock }} in stock
+                                        {{ $product->total_stock }} tersedia
                                     </span>
                                 @elseif($product->total_stock > 0)
                                     <span
                                         class="px-2.5 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold">
-                                        {{ $product->total_stock }} low stock
+                                        {{ $product->total_stock }} stok menipis
                                     </span>
                                 @else
                                     <span class="px-2.5 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold">
-                                        Out of Stock
+                                        Stok Habis
                                     </span>
                                 @endif
                             </td>
@@ -170,8 +170,7 @@
                                 <div class="flex items-center justify-center gap-2">
                                     <a href="{{ route('admin.products.edit', $product->id) }}"
                                         class="p-2 bg-white border border-gray-200 rounded-lg text-gray-600 hover:text-orange-600 hover:border-orange-200 transition-colors shadow-sm">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                         </svg>
@@ -202,7 +201,7 @@
                                             class="bg-white p-3 rounded-xl border border-gray-100 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
                                             <div class="flex items-center gap-3">
                                                 <div class="w-8 h-8 rounded-full border border-white shadow-sm ring-1 ring-gray-100 flex-shrink-0"
-                                                    style="background-color: {{ $variant->color }};"
+                                                    style="background-color: {{ $variant->color_hex }};"
                                                     title="{{ $variant->color }}"></div>
                                                 <div>
                                                     <div class="text-xs font-bold text-gray-900 uppercase">
@@ -230,7 +229,7 @@
                     <tbody>
                         <tr>
                             <td colspan="7" class="px-6 py-12 text-center text-gray-500">
-                                No products found matching your filters.
+                                Tidak ada produk yang cocok dengan filter Anda.
                             </td>
                         </tr>
                     </tbody>
@@ -243,9 +242,9 @@
             @if ($products->hasPages())
                 <div class="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex justify-between items-center">
                     <div class="text-sm text-gray-500">
-                        Showing <span
+                        Menampilkan <span
                             class="font-bold text-gray-900">{{ $products->firstItem() }}-{{ $products->lastItem() }}</span>
-                        of {{ $products->total() }} results
+                        dari {{ $products->total() }} hasil
                     </div>
                     <div>
                         {{ $products->links() }}

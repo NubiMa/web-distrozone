@@ -10,6 +10,8 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
+        // Capture search query if present (from GlobalSearchController fallback)
+        $searchQuery = $request->query('q', '');
         // Get all distinct filter options from database
         $allBrands = Product::distinct()->orderBy('brand')->pluck('brand')->filter();
         $allTypes = Product::distinct()->orderBy('type')->pluck('type')->filter();
@@ -29,7 +31,7 @@ class ProductController extends Controller
         $selectedTypes = [];
         $selectedColors = [];
         $selectedPriceRange = '';
-        $searchQuery = '';
+        // $searchQuery initialized at top of method
         $sortBy = 'newest';
 
         // Prepare products data for JavaScript

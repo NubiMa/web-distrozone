@@ -24,14 +24,14 @@
                         Dipesan pada {{ $order->created_at->format('d F Y, H:i') }}
                     </p>
                 </div>
-                <button
+                <a href="{{ route('checkout.success', $order->id) }}"
                     class="bg-white border-2 border-gray-300 text-gray-700 font-bold px-4 py-2 rounded-lg hover:bg-gray-50 hover:text-primary transition-colors flex items-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                     </svg>
-                    Unduh Faktur
-                </button>
+                    Bukti Pembayaran
+                </a>
             </div>
 
             <!-- Progress Tracker -->
@@ -48,7 +48,6 @@
                 @php
                     $steps = [
                         ['status' => 'pending', 'label' => 'Dipesan', 'date' => $order->created_at],
-                        ['status' => 'paid', 'label' => 'Dibayar', 'date' => $order->updated_at], // Simplified logic
                         ['status' => 'processing', 'label' => 'Diverifikasi', 'date' => null],
                         ['status' => 'shipped', 'label' => 'Dikirim', 'date' => null],
                         ['status' => 'completed', 'label' => 'Diterima', 'date' => null],
@@ -58,10 +57,19 @@
                     $currentStatus = strtolower($order->order_status ?? 'pending');
                     $statusMap = [
                         'pending' => 0,
-                        'paid' => 1,
-                        'processing' => 2,
-                        'shipped' => 3,
-                        'completed' => 4,
+                        'paid' => 1, // Paid maps to Verified step visually or stays at Pending? Usually Paid = Verified start. Let's map to Verified (1) or Pending (0). If paid but not verified manually, user sees Order -> Verified.
+    // Wait, previous logic: pending=0, paid=1, processing=2.
+    // Now: pending=0, processing=1, shipped=2, completed=3.
+    // If status is 'paid', it should probably show as 'Dipesan' (0) or 'Diverifikasi' (1)?
+    // The flowchart is: Order -> Pay -> Verify -> Ship.
+    // If we hide Pay, then Order -> Verify.
+    // So 'paid' status should effectively be step 0 (Dipesan) until it enters 'processing' (Verified).
+    // Or if 'paid' means "Waiting for Verification", it's still 0.
+                        'pending' => 0,
+                        'paid' => 0,
+                        'processing' => 1,
+                        'shipped' => 2,
+                        'completed' => 3,
                         'cancelled' => -1,
                     ];
                     $currentIndex = $statusMap[$currentStatus] ?? 0;
@@ -72,7 +80,7 @@
                     <div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-gray-100 -z-10"></div>
                     <!-- Active Progress Bar -->
                     <div class="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-accent -z-10 transition-all duration-1000"
-                        style="width: {{ $currentIndex * 25 }}%"></div>
+                        style="width: {{ $currentIndex * 33.33 }}%"></div>
 
                     @foreach ($steps as $index => $step)
                         <div class="flex flex-col items-center gap-2">
@@ -115,16 +123,25 @@
                                     'pending' => 'bg-yellow-100 text-yellow-800',
                                     'paid' => 'bg-blue-100 text-blue-800',
                                     'processing' => 'bg-blue-100 text-blue-800',
-                                    'shipped' => 'bg-purple-100 text-purple-800',
+                                    'shipped' => 'bg-blue-100 text-blue-800',
                                     'completed' => 'bg-green-100 text-green-800',
                                     'cancelled' => 'bg-red-100 text-red-800',
                                 ];
+                                $statusLabels = [
+                                    'pending' => 'MENUNGGU VERIFIKASI',
+                                    'paid' => 'DIBAYAR',
+                                    'processing' => 'DIPROSES',
+                                    'shipped' => 'DIKIRIM',
+                                    'completed' => 'SELESAI',
+                                    'cancelled' => 'DIBATALKAN',
+                                ];
                                 $currentStatus = strtolower($order->order_status ?? 'pending');
                                 $badgeColor = $statusColors[$currentStatus] ?? 'bg-gray-100 text-gray-800';
+                                $statusLabel = $statusLabels[$currentStatus] ?? strtoupper($currentStatus);
                             @endphp
                             <span
                                 class="{{ $badgeColor }} text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wide">
-                                {{ $order->order_status === 'pending' ? 'MENUNGGU VERIFIKASI' : strtoupper($order->order_status) }}
+                                {{ $statusLabel }}
                             </span>
                         </div>
                         <div class="divide-y divide-gray-100">
@@ -176,7 +193,7 @@
                                 <p class="text-accent font-bold text-sm">{{ $order->recipient_phone }}</p>
                             </div>
                             <!-- Map Placeholder -->
-                            <div
+                            {{-- <div
                                 class="w-full md:w-1/2 h-32 bg-orange-50 rounded-lg border border-orange-100 flex items-center justify-center relative overflow-hidden group">
                                 <div
                                     class="absolute inset-0 opacity-10 bg-[url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg')] bg-cover bg-center">
@@ -185,9 +202,24 @@
                                     class="bg-white text-primary text-xs font-bold px-3 py-1.5 rounded shadow-sm z-10 border border-gray-200 group-hover:scale-105 transition-transform">
                                     Lihat di Peta
                                 </button>
-                            </div>
+                            </div> --}}
                         </div>
                     </div>
+                    @if ($order->notes)
+                        <!-- Order Note -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                            <h3 class="font-bold text-lg text-primary mb-4 flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                                </svg>
+                                Catatan Pesanan
+                            </h3>
+                            <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                                <p class="text-gray-700 italic">"{{ $order->notes }}"</p>
+                            </div>
+                        </div>
+                    @endif
                 </div>
 
                 <!-- Right Column (Payment & Summary) -->
@@ -203,27 +235,29 @@
                             Metode Pembayaran
                         </h3>
 
-                        @if ($order->payment_method === 'transfer')
-                            <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
-                                <p class="text-xs text-gray-500 uppercase tracking-widest font-bold mb-2">Transfer Bank
-                                </p>
-                                <div class="flex justify-between items-center mb-1">
-                                    <span class="text-gray-600 text-sm">Bank:</span>
-                                    <span
-                                        class="font-bold text-gray-900">{{ $storeSettings['bank_name'] ?? 'BCA' }}</span>
-                                </div>
-                                <div class="flex justify-between items-center mb-1">
-                                    <span class="text-gray-600 text-sm">No. Rekening:</span>
-                                    <span
-                                        class="font-bold text-gray-900">{{ $storeSettings['bank_account_number'] ?? '1234567890' }}</span>
-                                </div>
-                                <div class="flex justify-between items-center">
-                                    <span class="text-gray-600 text-sm">Atas Nama:</span>
-                                    <span
-                                        class="font-bold text-gray-900">{{ $storeSettings['bank_account_holder'] ?? 'DistroZone Official' }}</span>
-                                </div>
-                            </div>
-                        @elseif($order->payment_method === 'qris')
+                        @php
+                            $rawPayment = $order->payment_method ?? '';
+                            $lowerPayment = strtolower($rawPayment);
+                            $isBank = Str::contains($lowerPayment, [
+                                'bank',
+                                'transfer',
+                                'bca',
+                                'mandiri',
+                                'bri',
+                                'bni',
+                                'cimb',
+                                'permata',
+                            ]);
+                            $isQris = Str::contains($lowerPayment, 'qris');
+                            $isEwallet = Str::contains($lowerPayment, ['gopay', 'ovo', 'dana', 'shopeepay', 'linkaja']);
+
+                            // Parse "TYPE: DETAIL" format if exists
+                            $parts = explode(':', $rawPayment);
+                            $type = trim($parts[0] ?? $rawPayment);
+                            $detail = trim($parts[1] ?? '');
+                        @endphp
+
+                        @if ($isQris)
                             <div class="bg-gray-50 rounded-lg p-4 border border-gray-100 text-center">
                                 <p class="text-xs text-gray-500 uppercase tracking-widest font-bold mb-3">QRIS</p>
                                 <div class="inline-block bg-white p-3 rounded-lg shadow-sm">
@@ -232,12 +266,64 @@
                                 </div>
                                 <p class="text-xs text-gray-600 mt-3">Scan QR Code untuk pembayaran</p>
                             </div>
+                        @elseif($isBank)
+                            <div class="bg-gray-50 rounded-lg p-4 border border-gray-100 space-y-3">
+                                <p
+                                    class="text-xs text-gray-500 uppercase tracking-widest font-bold border-b border-gray-200 pb-2 mb-2">
+                                    TRANSFER BANK</p>
+                                <div class="flex justify-between items-center text-sm">
+                                    <span class="text-gray-600">Bank</span>
+                                    <span class="font-bold text-gray-900 uppercase">
+                                        {{ $detail ?: $storeSettings['bank_name'] ?? 'BCA' }}
+                                    </span>
+                                </div>
+                                @if (empty($detail) || Str::contains($lowerPayment, ['manual', 'transfer']))
+                                    {{-- Fallback to manual settings if no specific dynamic detail is present --}}
+                                    <div class="flex justify-between items-center text-sm">
+                                        <span class="text-gray-600">No. Rekening</span>
+                                        <span
+                                            class="font-bold text-gray-900">{{ $storeSettings['bank_account_number'] ?? '1234567890' }}</span>
+                                    </div>
+                                    <div class="flex justify-between items-center text-sm">
+                                        <span class="text-gray-600">Atas Nama</span>
+                                        <span
+                                            class="font-bold text-gray-900">{{ $storeSettings['bank_account_holder'] ?? 'DistroZone Official' }}</span>
+                                    </div>
+                                @else
+                                    {{-- If it's a dynamic VA (e.g. "BCA VIRTUAL ACCOUNT"), usually the number is in another field, 
+                                         but if not available, just show the type. Assuming $detail holds the specific bank/VA name --}}
+                                    <div class="flex justify-between items-center text-sm">
+                                        <span class="text-gray-600">Metode</span>
+                                        <span class="font-bold text-gray-900">{{ $detail }}</span>
+                                    </div>
+                                @endif
+                            </div>
+                        @elseif($isEwallet)
+                            <div class="bg-gray-50 rounded-lg p-4 border border-gray-100 space-y-3">
+                                <p
+                                    class="text-xs text-gray-500 uppercase tracking-widest font-bold border-b border-gray-200 pb-2 mb-2">
+                                    E-WALLET</p>
+                                <div class="flex justify-between items-center text-sm">
+                                    <span class="text-gray-600">Provider</span>
+                                    {{-- Try to extract provider name from detail or raw string --}}
+                                    <span class="font-bold text-gray-900 uppercase">
+                                        {{ $detail ?: str_replace('_', ' ', $type) }}
+                                    </span>
+                                </div>
+                            </div>
                         @else
-                            <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
-                                <p class="text-xs text-gray-500 uppercase tracking-widest font-bold mb-2">
-                                    {{ strtoupper($order->payment_method) }}</p>
-                                <p class="text-sm text-gray-600">Metode pembayaran:
-                                    {{ ucfirst($order->payment_method) }}</p>
+                            {{-- Default Fallback --}}
+                            <div class="bg-gray-50 rounded-lg p-4 border border-gray-100 space-y-3">
+                                <p
+                                    class="text-xs text-gray-500 uppercase tracking-widest font-bold border-b border-gray-200 pb-2 mb-2">
+                                    {{ strtoupper($type) }} (LAINNYA)
+                                </p>
+                                <div class="flex justify-between items-center text-sm">
+                                    <span class="text-gray-600">Detail</span>
+                                    <span class="font-bold text-gray-900 text-right">
+                                        {{ $detail ?: ucfirst($rawPayment) }}
+                                    </span>
+                                </div>
                             </div>
                         @endif
                     </div>

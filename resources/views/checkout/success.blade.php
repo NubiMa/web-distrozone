@@ -57,28 +57,69 @@
 
                     <!-- Status Progress -->
                     <div class="mb-6">
+                        @php
+                            $statusTitle = 'Menunggu Verifikasi';
+                            $step = 'Langkah 1 dari 3';
+                            $progress = '33%';
+                            $statusColor = 'bg-gradient-to-r from-accent to-orange-600';
+                            $infoColor = 'bg-blue-50 border-blue-200 text-blue-800';
+                            $infoIconColor = 'text-blue-600';
+                            $infoText =
+                                'Pesanan bernilai tinggi akan diverifikasi secara manual untuk mencegah fraud. Biasanya memakan waktu kurang dari 2 jam.';
+
+                            if ($transaction->order_status == 'processing') {
+                                $statusTitle = 'Pesanan Diproses';
+                                $step = 'Langkah 2 dari 3';
+                                $progress = '66%';
+                                $infoText = 'Pesanan Anda sedang disiapkan dan akan segera dikirim.';
+                            } elseif ($transaction->order_status == 'shipped') {
+                                $statusTitle = 'Pesanan Dikirim';
+                                $step = 'Langkah 3 dari 3';
+                                $progress = '100%';
+                                $statusColor = 'bg-green-600';
+                                $infoColor = 'bg-green-50 border-green-200 text-green-800';
+                                $infoIconColor = 'text-green-600';
+                                $infoText = 'Pesanan Anda sedang dalam perjalanan. Cek resi untuk melacak pengiriman.';
+                            } elseif ($transaction->order_status == 'completed') {
+                                $statusTitle = 'Pesanan Selesai';
+                                $step = 'Selesai';
+                                $progress = '100%';
+                                $statusColor = 'bg-green-600';
+                                $infoColor = 'bg-green-50 border-green-200 text-green-800';
+                                $infoIconColor = 'text-green-600';
+                                $infoText = 'Pesanan telah diterima. Terima kasih sudah berbelanja di DistroZone!';
+                            } elseif ($transaction->order_status == 'cancelled') {
+                                $statusTitle = 'Pesanan Dibatalkan';
+                                $step = 'Dibatalkan';
+                                $progress = '100%';
+                                $statusColor = 'bg-red-600';
+                                $infoColor = 'bg-red-50 border-red-200 text-red-800';
+                                $infoIconColor = 'text-red-600';
+                                $infoText = 'Pesanan ini telah dibatalkan. Hubungi CS jika ini adalah kesalahan.';
+                            }
+                        @endphp
+
                         <div class="flex items-center justify-between mb-2">
-                            <h3 class="font-bold text-primary">Menunggu Verifikasi</h3>
+                            <h3 class="font-bold text-primary">{{ $statusTitle }}</h3>
                             <span
-                                class="text-xs font-bold text-accent bg-orange-100 px-3 py-1 rounded-full uppercase tracking-wide">Langkah
-                                1 dari 3</span>
+                                class="text-xs font-bold text-accent bg-orange-100 px-3 py-1 rounded-full uppercase tracking-wide">{{ $step }}</span>
                         </div>
 
                         <!-- Progress Bar -->
                         <div class="w-full bg-gray-200 rounded-full h-2 mb-4">
-                            <div class="bg-gradient-to-r from-accent to-orange-600 h-2 rounded-full" style="width: 33%">
+                            <div class="{{ $statusColor }} h-2 rounded-full transition-all duration-500"
+                                style="width: {{ $progress }}">
                             </div>
                         </div>
 
-                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
-                            <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor"
+                        <div class="{{ $infoColor }} border rounded-lg p-4 flex items-start gap-3">
+                            <svg class="w-5 h-5 {{ $infoIconColor }} mt-0.5 flex-shrink-0" fill="currentColor"
                                 viewBox="0 0 20 20">
                                 <path fill-rule="evenodd"
                                     d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
                                     clip-rule="evenodd"></path>
                             </svg>
-                            <p class="text-sm text-blue-800">Pesanan bernilai tinggi akan diverifikasi secara manual
-                                untuk mencegah fraud. Biasanya memakan waktu kurang dari 2 jam.</p>
+                            <p class="text-sm">{{ $infoText }}</p>
                         </div>
                     </div>
 
@@ -169,7 +210,7 @@
                             class="flex-1 bg-white border-2 border-gray-300 text-gray-700 font-bold py-3 rounded-lg hover:bg-gray-50 transition-colors text-center uppercase tracking-wide text-sm">
                             Kembali ke Toko
                         </a>
-                        <a href="{{ route('profile.show') }}"
+                        <a href="{{ route('orders.show', $transaction->id) }}"
                             class="flex-1 bg-gradient-to-r from-accent to-orange-600 text-white font-bold py-3 rounded-lg hover:from-accent-light hover:to-orange-500 transition-all shadow-lg shadow-accent/20 text-center uppercase tracking-wide text-sm flex items-center justify-center gap-2">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

@@ -81,11 +81,11 @@
             <!-- Header -->
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                 <div>
-                    <nav class="flex text-sm text-gray-500 mb-1">
+                    {{-- <nav class="flex text-sm text-gray-500 mb-1">
                         <span class="hover:text-gray-700 cursor-pointer">Pengaturan</span>
                         <span class="mx-2">/</span>
                         <span class="text-orange-600 font-medium">Toko & Operasional</span>
-                    </nav>
+                    </nav> --}}
                     <h1 class="text-3xl font-bold text-gray-900 uppercase">PENGATURAN TOKO</h1>
                     <p class="text-gray-500 mt-1">Kelola detail flagship DistroZone, preferensi regional, dan jadwal
                         operasional mingguan Anda.</p>
@@ -219,7 +219,7 @@
                             </div>
 
                             <!-- Currency -->
-                            {{-- <div class="col-span-2 md:col-span-1">
+                            <div class="col-span-2 md:col-span-1">
                                 <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Mata
                                     Uang</label>
                                 <select name="store_currency"
@@ -232,10 +232,10 @@
                                         Dolar
                                         AS</option>
                                 </select>
-                            </div> --}}
+                            </div>
 
                             <!-- Timezone -->
-                            {{-- <div class="col-span-2 md:col-span-1">
+                            <div class="col-span-2 md:col-span-1">
                                 <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Zona
                                     Waktu</label>
                                 <select name="store_timezone"
@@ -247,7 +247,7 @@
                                         {{ ($settings['store_timezone'] ?? '') == 'America/Los_Angeles' ? 'selected' : '' }}>
                                         (GMT-08:00) Pacific Time</option>
                                 </select>
-                            </div> --}}
+                            </div>
 
                             <!-- Map Placeholder -->
                             {{-- <div class="col-span-2 mt-2">
@@ -272,7 +272,7 @@
                             showModal: false,
                             editingIndex: null,
                             form: {
-                                type: 'bank_transfer',
+                                type: '',
                                 name: '',
                                 enabled: true,
                                 details: {}
@@ -280,7 +280,7 @@
                             addMethod() {
                                 this.editingIndex = null;
                                 this.form = {
-                                    type: 'bank_transfer',
+                                    type: '',
                                     name: '',
                                     enabled: true,
                                     details: {}

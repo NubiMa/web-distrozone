@@ -7,25 +7,25 @@
         <!-- Header -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
             <div>
-                <h1 class="text-3xl font-bold text-gray-900">Dashboard Overview</h1>
-                <p class="text-gray-500 mt-1">Welcome back, Admin. Here's what's happening today.</p>
+                <h1 class="text-3xl font-bold text-gray-900">Ringkasan Dashboard</h1>
+                <p class="text-gray-500 mt-1">Selamat datang kembali, Admin. Berikut ringkasan aktivitas hari ini.</p>
             </div>
             <div class="flex gap-3 mt-4 md:mt-0">
-                <button
-                    class="px-4 py-2.5 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors flex items-center gap-2">
+                {{-- <button
+                    class="px-4 py-2.5 bg-orange-600 text-white font-bold rounded-xl hover:bg-orange-700 transition-colors flex items-center gap-2 shadow-lg shadow-orange-600/30">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                     </svg>
-                    Export
-                </button>
-                <a href="{{ route('admin.products.create') }}"
+                    Ekspor
+                </button> --}}
+                {{-- <a href="{{ route('admin.products.create') }}"
                     class="px-4 py-2.5 bg-orange-600 text-white font-bold rounded-xl hover:bg-orange-700 transition-colors flex items-center gap-2 shadow-lg shadow-orange-600/30">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
                     New Product
-                </a>
+                </a> --}}
             </div>
         </div>
 
@@ -50,7 +50,7 @@
                         +15.2%
                     </div>
                 </div>
-                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Total Sales</h3>
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">TOTAL PENJUALAN</h3>
                 <p class="text-2xl font-bold text-gray-900">Rp {{ number_format($totalRevenue, 0, ',', '.') }}</p>
                 <div class="absolute right-0 bottom-0 opacity-5">
                     <svg class="w-24 h-24" fill="currentColor" viewBox="0 0 24 24">
@@ -76,7 +76,7 @@
                         0%
                     </div>
                 </div>
-                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Active Employees</h3>
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">KARYAWAN AKTIF</h3>
                 <p class="text-2xl font-bold text-gray-900">{{ $totalStaff }}</p>
                 <div class="absolute right-0 bottom-0 opacity-5">
                     <svg class="w-24 h-24" fill="currentColor" viewBox="0 0 24 24">
@@ -106,7 +106,7 @@
                         +5%
                     </div>
                 </div>
-                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Total Products</h3>
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">TOTAL PRODUK</h3>
                 <p class="text-2xl font-bold text-gray-900">{{ $totalProducts }}</p>
                 <div class="absolute right-0 bottom-0 opacity-5">
                     <svg class="w-24 h-24" fill="currentColor" viewBox="0 0 24 24">
@@ -127,10 +127,10 @@
                         </svg>
                     </div>
                     <div class="flex items-center gap-1 text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded-lg">
-                        Action Needed
+                        Perlu Tindakan
                     </div>
                 </div>
-                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Low Stock Alerts</h3>
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">PERINGATAN STOK RENDAH</h3>
                 <p class="text-2xl font-bold text-gray-900">{{ $lowStockCount }}</p>
                 <div class="absolute right-0 bottom-0 opacity-5">
                     <svg class="w-24 h-24 text-red-600" fill="currentColor" viewBox="0 0 24 24">
@@ -147,13 +147,13 @@
             <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                 <div class="flex justify-between items-center mb-6">
                     <div>
-                        <h3 class="text-lg font-bold text-gray-900">Sales Performance</h3>
-                        <p class="text-sm text-gray-500">Weekly revenue overview</p>
+                        <h3 class="text-lg font-bold text-gray-900">Performa Penjualan</h3>
+                        <p class="text-sm text-gray-500">Ringkasan pendapatan mingguan</p>
                     </div>
-                    <select
+                    <select id="chart-filter" onchange="updateChart(this.value)"
                         class="text-xs font-bold bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 cursor-pointer focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none">
-                        <option>This Week</option>
-                        <option>Last Week</option>
+                        <option value="this_week">Minggu Ini</option>
+                        <option value="last_week">Minggu Lalu</option>
                     </select>
                 </div>
                 <div class="h-80 w-full">
@@ -164,9 +164,9 @@
             <!-- Recent Activity -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                 <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-lg font-bold text-gray-900">Recent Activity</h3>
+                    <h3 class="text-lg font-bold text-gray-900">Aktivitas Terbaru</h3>
                     <a href="{{ route('admin.reports') }}"
-                        class="text-xs font-bold text-orange-600 hover:text-orange-700">View All</a>
+                        class="text-xs font-bold text-orange-600 hover:text-orange-700">Lihat Semua</a>
                 </div>
                 <div class="flow-root">
                     <ul class="-my-5 divide-y divide-gray-100">
@@ -187,10 +187,10 @@
                                     </div>
                                     <div class="flex-1 min-w-0">
                                         <p class="text-sm font-medium text-gray-900 truncate">
-                                            Sold Order #{{ $activity->transaction_code }}
+                                            Pesanan Terjual #{{ $activity->transaction_code }}
                                         </p>
                                         <p class="text-xs text-gray-500 truncate">
-                                            by {{ $activity->cashier->name ?? 'Unknown' }}
+                                            oleh {{ $activity->cashier->name ?? 'Unknown' }}
                                         </p>
                                     </div>
                                     <div class="text-xs text-gray-400">
@@ -202,7 +202,7 @@
 
                         @if ($recentActivities->isEmpty())
                             <li class="py-5 text-center text-sm text-gray-500">
-                                No recent activity found.
+                                Tidak ada aktivitas terbaru.
                             </li>
                         @endif
                     </ul>
@@ -213,34 +213,29 @@
 
     <!-- Chart Script -->
     <script>
-        document.addEventListener('alpine:init', () => {
-            // ...
-        });
+        let salesChart;
 
-        document.addEventListener('DOMContentLoaded', function() {
+        function createChart(labels, data) {
             const ctx = document.getElementById('salesChart').getContext('2d');
-
-            // Prepare Data
-            const labels = @json($weeklySales->pluck('date')->map(fn($d) => \Carbon\Carbon::parse($d)->format('D')));
-            const data = @json($weeklySales->pluck('total'));
-
-            // If empty data (fill with explicit zeros for days)
-            // Ideally we should process this in controller to handle missing days, 
-            // but for now simple display is fine.
 
             // Gradient
             let gradient = ctx.createLinearGradient(0, 0, 0, 400);
-            gradient.addColorStop(0, 'rgba(234, 88, 12, 0.2)'); // Orange-600 with opacity
+            gradient.addColorStop(0, 'rgba(234, 88, 12, 0.2)');
             gradient.addColorStop(1, 'rgba(234, 88, 12, 0)');
 
-            new Chart(ctx, {
+            // Destroy existing chart if it exists
+            if (salesChart) {
+                salesChart.destroy();
+            }
+
+            salesChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: labels.length ? labels : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    labels: labels.length ? labels : ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'],
                     datasets: [{
-                        label: 'Revenue',
+                        label: 'Pendapatan',
                         data: data.length ? data : [0, 0, 0, 0, 0, 0, 0],
-                        borderColor: '#ea580c', // Orange-600
+                        borderColor: '#ea580c',
                         backgroundColor: gradient,
                         borderWidth: 3,
                         pointBackgroundColor: '#fff',
@@ -271,8 +266,7 @@
                             },
                             callbacks: {
                                 label: function(context) {
-                                    return 'Rp ' + new Intl.NumberFormat('id-ID').format(context.parsed
-                                        .y);
+                                    return 'Rp ' + new Intl.NumberFormat('id-ID').format(context.parsed.y);
                                 }
                             }
                         }
@@ -287,8 +281,7 @@
                             },
                             ticks: {
                                 callback: function(value) {
-                                    if (value >= 1000000) return 'Rp ' + (value / 1000000).toFixed(1) +
-                                        'M';
+                                    if (value >= 1000000) return 'Rp ' + (value / 1000000).toFixed(1) + 'M';
                                     if (value >= 1000) return 'Rp ' + (value / 1000).toFixed(0) + 'k';
                                     return value;
                                 },
@@ -313,6 +306,30 @@
                     }
                 }
             });
+        }
+
+        function updateChart(period) {
+            // Fetch new data based on period
+            fetch(`{{ route('admin.dashboard') }}?period=${period}`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    createChart(data.labels, data.data);
+                })
+                .catch(error => {
+                    console.error('Error updating chart:', error);
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initial chart load
+            const labels = @json($weeklySales->pluck('date')->map(fn($d) => \Carbon\Carbon::parse($d)->format('D')));
+            const data = @json($weeklySales->pluck('total'));
+            createChart(labels, data);
         });
     </script>
 </x-admin-layout>

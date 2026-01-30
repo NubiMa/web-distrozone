@@ -185,6 +185,37 @@
                     <td>{{ $transaction->created_at->format('d F Y, H:i') }} WIB</td>
                 </tr>
                 <tr>
+                    <td>Order Status:</td>
+                    <td>
+                        @php
+                            $statusLabel = 'Menunggu Verifikasi';
+                            $statusColor = '#FEF3C7; color: #92400E'; // Pending/Default
+
+                            switch ($transaction->order_status) {
+                                case 'processing':
+                                    $statusLabel = 'Diproses';
+                                    $statusColor = '#DBEAFE; color: #1E40AF';
+                                    break;
+                                case 'shipped':
+                                    $statusLabel = 'Dikirim';
+                                    $statusColor = '#D1FAE5; color: #065F46';
+                                    break;
+                                case 'completed':
+                                    $statusLabel = 'Selesai';
+                                    $statusColor = '#D1FAE5; color: #065F46';
+                                    break;
+                                case 'cancelled':
+                                    $statusLabel = 'Dibatalkan';
+                                    $statusColor = '#FEE2E2; color: #991B1B';
+                                    break;
+                            }
+                        @endphp
+                        <span class="payment-status" style="background-color: {{ $statusColor }}">
+                            {{ strtoupper($statusLabel) }}
+                        </span>
+                    </td>
+                </tr>
+                <tr>
                     <td>Payment Status:</td>
                     <td>
                         <span class="payment-status status-{{ $transaction->payment_status }}">

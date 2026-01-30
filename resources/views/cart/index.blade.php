@@ -2,9 +2,12 @@
     <x-customer-sidebar active="cart">
         <div class="space-y-6">
             <!-- Header -->
-            <div class="flex items-end gap-4 mb-4">
-                <h1 class="text-3xl font-bold font-display text-primary uppercase tracking-wide">Keranjang Belanja</h1>
-                <span class="text-gray-500 text-lg mb-1 font-medium">({{ count($cart) }} Item)</span>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="text-3xl font-bold font-display text-primary">Keranjang Belanja</h1>
+                    <span class="text-accent text-lg"></span>
+                </div>
+                <p class="text-gray-500 text-sm mt-1">{{ count($cart) }} item di keranjang.</p>
             </div>
 
             @if (count($cart) > 0)

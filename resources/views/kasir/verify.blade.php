@@ -30,19 +30,19 @@
 
         <!-- Header -->
         <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900">Payment Verification</h1>
+            <h1 class="text-3xl font-bold text-gray-900">Verifikasi Pembayaran</h1>
             <div class="flex items-center gap-2 mt-2">
-                <p class="text-gray-600">Verify the bank transfer proof for Order <span
+                <p class="text-gray-600">Verifikasi bukti transfer untuk Pesanan <span
                         class="font-bold text-gray-900">#{{ $transaction->transaction_code }}</span>.</p>
                 @if ($transaction->payment_status === 'pending')
                     <span
                         class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-orange-100 text-orange-700">
-                        ⏳ AWAITING APPROVAL
+                        ⏳ MENUNGGU KONFIRMASI
                     </span>
                 @elseif($transaction->payment_status === 'rejected')
                     <span
                         class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700">
-                        ✕ REJECTED
+                        ✕ DITOLAK
                     </span>
                 @else
                     <span
@@ -50,8 +50,8 @@
                         ✓ {{ strtoupper($transaction->payment_status) }}
                     </span>
                 @endif
-                <span class="text-xs text-gray-400 ml-auto">Submitted:
-                    {{ $transaction->created_at->format('M d, h:i A') }}</span>
+                <span class="text-xs text-gray-400 ml-auto">Diajukan:
+                    {{ $transaction->created_at->format('d M, H:i') }}</span>
             </div>
         </div>
 
@@ -64,7 +64,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
-                        Payment Proof
+                        Bukti Pembayaran
                     </h2>
                     <div class="flex gap-2">
                         <button @click="zoom = !zoom" class="text-gray-400 hover:text-gray-600">
@@ -93,7 +93,7 @@
                             src="{{ asset('storage/' . $transaction->payment_proof) }}" alt="Proof"
                             @click="zoom = !zoom">
                         <p x-show="!zoom" class="absolute bottom-4 text-xs text-gray-400 bg-white/80 px-2 py-1 rounded">
-                            Click to zoom</p>
+                            Klik untuk memperbesar</p>
                     @else
                         <div class="text-center text-gray-400">
                             <svg class="w-12 h-12 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor"
@@ -101,7 +101,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
-                            <p>No payment proof uploaded</p>
+                            <p>Tidak ada bukti pembayaran</p>
                         </div>
                     @endif
                 </div>
@@ -114,7 +114,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                     </svg>
-                    Order Summary
+                    Ringkasan Pesanan
                 </h2>
 
                 <!-- Customer Card -->
@@ -129,8 +129,8 @@
                         <p class="text-xs text-gray-400">{{ $transaction->user->phone ?? '-' }}</p>
                     </div>
                     <div class="ml-auto text-right">
-                        <p class="text-[10px] font-bold text-orange-600 uppercase tracking-wider">CUSTOMER</p>
-                        <p class="text-xs text-gray-500">Since {{ $transaction->user->created_at->format('M Y') }}</p>
+                        <p class="text-[10px] font-bold text-orange-600 uppercase tracking-wider">PELANGGAN</p>
+                        <p class="text-xs text-gray-500">Sejak {{ $transaction->user->created_at->format('M Y') }}</p>
                     </div>
                 </div>
 
@@ -138,9 +138,9 @@
                 <div class="space-y-4 mb-8">
                     <div
                         class="flex text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 pb-2">
-                        <span class="flex-1">ITEM</span>
-                        <span class="w-16 text-center">QTY</span>
-                        <span class="w-24 text-right">PRICE</span>
+                        <span class="flex-1">PRODUK</span>
+                        <span class="w-16 text-center">JML</span>
+                        <span class="w-24 text-right">HARGA</span>
                     </div>
 
                     @foreach ($transaction->details as $detail)
@@ -148,7 +148,7 @@
                             <div class="flex-1">
                                 <p class="text-sm font-bold text-gray-900">
                                     {{ $detail->productVariant->product->brand }}</p>
-                                <p class="text-xs text-gray-500">Color: {{ $detail->productVariant->color }} | Size:
+                                <p class="text-xs text-gray-500">Warna: {{ $detail->productVariant->color }} | Ukuran:
                                     {{ $detail->productVariant->size }}</p>
                             </div>
                             <div class="w-16 text-center text-sm text-gray-900">{{ $detail->quantity }}</div>
@@ -161,16 +161,24 @@
                 <!-- Totals -->
                 <div class="border-t border-dashed border-gray-200 pt-4 mb-8 space-y-2">
                     <div class="flex justify-between text-sm text-gray-600">
+                        <span>Metode Pembayaran</span>
+                        @if (str_contains(strtolower($transaction->payment_method), 'qris'))
+                            <span>QRIS</span>
+                        @else
+                            <span>{{ trim(explode(':', $transaction->payment_method)[1] ?? $transaction->payment_method) }}</span>
+                        @endif
+                    </div>
+                    <div class="flex justify-between text-sm text-gray-600">
                         <span>Subtotal</span>
                         <span>Rp {{ number_format($transaction->subtotal, 0, ',', '.') }}</span>
                     </div>
                     <div class="flex justify-between text-sm text-gray-600">
-                        <span>Shipping Cost</span>
+                        <span>Ongkos Kirim</span>
                         <span>Rp {{ number_format($transaction->shipping_cost, 0, ',', '.') }}</span>
                     </div>
                     <div
                         class="flex justify-between items-center text-xl font-bold text-gray-900 pt-2 border-t border-gray-100 mt-2">
-                        <span>TOTAL AMOUNT</span>
+                        <span>TOTAL TAGIHAN</span>
                         <span class="text-orange-600">Rp {{ number_format($transaction->total, 0, ',', '.') }}</span>
                     </div>
                 </div>
@@ -179,12 +187,11 @@
                     <!-- Action Form (Alpine) -->
                     <div x-data="{ notes: '' }">
                         <div class="mb-6">
-                            <label
-                                class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Verification
-                                Note (Optional)</label>
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Catatan
+                                Verifikasi (Opsional)</label>
                             <textarea x-model="notes" rows="3"
                                 class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all resize-none shadow-sm"
-                                placeholder="Add a note about this transaction..."></textarea>
+                                placeholder="Tambahkan catatan tentang transaksi ini..."></textarea>
                         </div>
 
                         <div class="flex gap-4">
@@ -194,7 +201,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M6 18L18 6M6 6l12 12" />
                                 </svg>
-                                Reject Payment
+                                Tolak Pembayaran
                             </button>
                             <button @click="submitVerification('approve', notes)"
                                 class="flex-1 bg-orange-600 text-white py-3.5 rounded-xl font-bold hover:bg-orange-700 shadow-lg shadow-orange-500/30 transition-all flex items-center justify-center gap-2 hover:scale-[1.02]">
@@ -202,20 +209,20 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M5 13l4 4L19 7" />
                                 </svg>
-                                Approve Payment
+                                Terima Pembayaran
                             </button>
                         </div>
                     </div>
                 @else
                     <!-- Status Display if already processed -->
                     <div class="bg-gray-50 rounded-xl p-6 text-center border border-gray-200">
-                        <p class="text-sm text-gray-600 mb-1">Transaction processed by</p>
+                        <p class="text-sm text-gray-600 mb-1">Transaksi diproses oleh</p>
                         <p class="font-bold text-gray-900">{{ $transaction->verifier->name ?? 'Unknown' }}</p>
-                        <p class="text-xs text-gray-500 mt-2">on
-                            {{ optional($transaction->verified_at)->format('M d, Y h:i A') ?? '-' }}</p>
+                        <p class="text-xs text-gray-500 mt-2">pada
+                            {{ optional($transaction->verified_at)->format('d M Y, H:i') ?? '-' }}</p>
                         @if ($transaction->notes)
                             <div class="mt-4 pt-4 border-t border-gray-200">
-                                <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Note</p>
+                                <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Catatan</p>
                                 <p class="text-sm text-gray-800 italic">"{{ $transaction->notes }}"</p>
                             </div>
                         @endif
@@ -227,7 +234,8 @@
 
     <script>
         async function submitVerification(action, notes) {
-            if (!confirm('Are you sure you want to ' + action + ' this payment?')) return;
+            const actionText = action === 'approve' ? 'menyetujui' : 'menolak';
+            if (!confirm('Apakah Anda yakin ingin ' + actionText + ' pembayaran ini?')) return;
 
             try {
                 const response = await fetch('/kasir/api/orders/{{ $transaction->id }}/verify', {
@@ -248,11 +256,11 @@
                 if (data.success) {
                     window.location.reload(); // Reload to show status
                 } else {
-                    alert(data.message || 'Error processing verification');
+                    alert(data.message || 'Terjadi kesalahan saat memproses verifikasi');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('An error occurred. Please try again.');
+                alert('Terjadi kesalahan. Silakan coba lagi.');
             }
         }
     </script>

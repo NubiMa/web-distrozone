@@ -7,13 +7,13 @@
                 <div>
                     <div class="flex items-center gap-2">
                         <h1 class="text-3xl font-bold font-display text-primary">Wishlist Saya</h1>
-                        <span class="text-accent text-lg">💡</span>
+                        <span class="text-accent text-lg"></span>
                     </div>
                     <p class="text-gray-500 text-sm mt-1">{{ count($wishlistItems) }} item disimpan.</p>
                 </div>
 
                 <!-- Move All to Cart Button -->
-                @if (count($wishlistItems) > 0)
+                {{-- @if (count($wishlistItems) > 0)
                     <form action="{{ route('wishlist.moveAll') }}" method="POST">
                         @csrf
                         <button type="submit"
@@ -25,7 +25,7 @@
                             Pindahkan Semua ke Keranjang
                         </button>
                     </form>
-                @endif
+                @endif --}}
             </div>
 
             <!-- Cloud/Grid of Items -->

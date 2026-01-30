@@ -152,7 +152,7 @@ class WebCheckoutController extends Controller
                 'transaction_code' => $transactionCode,
                 'user_id' => $user->id,
                 'transaction_type' => 'online',
-                'payment_method' => $request->payment_method_type . ': ' . $request->payment_method_name,
+                'payment_method' => $request->payment_method_name,
                 'payment_status' => 'pending',
                 'payment_proof' => $proofPath,
                 'subtotal' => $subtotal,

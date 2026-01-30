@@ -43,6 +43,14 @@
                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
             </div>
 
+            <!-- Username -->
+            <div class="mb-6">
+                <label for="username" class="block text-sm font-bold text-gray-700 mb-2">Username *</label>
+                <input type="text" name="username" id="username" value="{{ old('username', $staff->username) }}"
+                    required
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+            </div>
+
             <!-- NIK -->
             <div class="mb-6">
                 <label for="nik" class="block text-sm font-bold text-gray-700 mb-2">NIK (16 digit) *</label>

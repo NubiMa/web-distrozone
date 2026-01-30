@@ -21,16 +21,18 @@
                     class="text-gray-300 hover:text-accent transition-colors text-sm font-medium">TENTANG KAMI</a>
 
                 <!-- Search Bar -->
-                <div class="relative group">
-                    <input type="text"
+                {{-- <form action="{{ route('search') }}" method="GET" class="relative group">
+                    <input type="text" name="query"
                         class="bg-white/5 border border-white/10 rounded-full py-2 px-4 pl-10 text-sm text-white focus:outline-none focus:border-accent w-48 transition-all group-hover:bg-white/10"
                         placeholder="Cari produk...">
-                    <svg class="w-4 h-4 text-gray-400 absolute left-3.5 top-3" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                    </svg>
-                </div>
+                    <button type="submit"
+                        class="absolute left-3.5 top-3 text-gray-400 group-hover:text-white transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </button>
+                </form> --}}
             </div>
 
             <!-- Right Icons -->

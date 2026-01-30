@@ -63,13 +63,23 @@
                     </div>
                 </div>
 
-                <!-- Base Price -->
-                <div class="mb-4">
-                    <label for="base_price" class="block text-sm font-bold text-gray-700 mb-2">Harga Dasar *</label>
-                    <input type="number" name="base_price" id="base_price" value="{{ old('base_price') }}" required
-                        min="0"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
-                    <p class="text-xs text-gray-500 mt-1">Harga yang akan ditampilkan jika tidak ada varian</p>
+                <!-- Base Price & Selling Price -->
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="base_price" class="block text-sm font-bold text-gray-700 mb-2">Harga Modal *</label>
+                        <input type="number" name="base_price" id="base_price" value="{{ old('base_price') }}" required
+                            min="0"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                        <p class="text-xs text-gray-500 mt-1">Harga pokok produk</p>
+                    </div>
+                    <div>
+                        <label for="selling_price" class="block text-sm font-bold text-gray-700 mb-2">Harga Jual
+                            *</label>
+                        <input type="number" name="selling_price" id="selling_price" value="{{ old('selling_price') }}"
+                            required min="0"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                        <p class="text-xs text-gray-500 mt-1">Harga jual ke customer</p>
+                    </div>
                 </div>
 
                 <!-- Description -->
@@ -106,7 +116,7 @@
                                 </button>
                             </div>
 
-                            <div class="grid grid-cols-1 md:grid-cols-6 gap-3">
+                            <div class="grid grid-cols-1 md:grid-cols-7 gap-3">
                                 <div class="md:col-span-2">
                                     <label class="block text-xs font-bold text-gray-700 mb-1">Warna *</label>
                                     <div class="flex gap-2">
@@ -142,7 +152,13 @@
                                     </select>
                                 </div>
                                 <div class="md:col-span-1">
-                                    <label class="block text-xs font-bold text-gray-700 mb-1">Harga *</label>
+                                    <label class="block text-xs font-bold text-gray-700 mb-1">H. Modal *</label>
+                                    <input type="number" :name="'variants[' + index + '][cost_price]'"
+                                        x-model="variant.cost_price" required min="0" placeholder="0"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500">
+                                </div>
+                                <div class="md:col-span-1">
+                                    <label class="block text-xs font-bold text-gray-700 mb-1">H. Jual *</label>
                                     <input type="number" :name="'variants[' + index + '][price]'"
                                         x-model="variant.price" required min="0" placeholder="0"
                                         class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500">
@@ -201,6 +217,7 @@
                         color: '',
                         color_hex: '#000000',
                         size: '',
+                        cost_price: '',
                         price: '',
                         stock: '',
                         photo: null,
@@ -241,6 +258,7 @@
                             color: '',
                             color_hex: '#000000',
                             size: '',
+                            cost_price: '',
                             price: '',
                             stock: '',
                             photo: null,

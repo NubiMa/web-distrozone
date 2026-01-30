@@ -66,12 +66,14 @@ class AdminProductController extends Controller
             'type' => 'required|in:lengan panjang,lengan pendek',
             'description' => 'nullable|string',
             'base_price' => 'required|numeric|min:0',
+            'selling_price' => 'required|numeric|min:0',
             
             // Variants
             'variants' => 'required|array|min:1',
             'variants.*.color' => 'required|string|max:50',
             'variants.*.color_hex' => 'required|string|max:7', // validate hex code
             'variants.*.size' => 'required|in:XS,S,M,L,XL,2XL,3XL,4XL,5XL',
+            'variants.*.cost_price' => 'required|numeric|min:0',
             'variants.*.price' => 'required|numeric|min:0',
             'variants.*.stock' => 'required|integer|min:0',
             'variants.*.photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
@@ -88,6 +90,7 @@ class AdminProductController extends Controller
                 'type' => $validated['type'],
                 'description' => $validated['description'] ?? null,
                 'base_price' => $validated['base_price'],
+                'selling_price' => $validated['selling_price'],
                 'photo' => null, // Will be updated from first variant
                 'is_active' => true,
             ]);
@@ -128,6 +131,7 @@ class AdminProductController extends Controller
                     'color' => $variantData['color'],
                     'color_hex' => $variantData['color_hex'] ?? null,
                     'size' => $variantData['size'],
+                    'cost_price' => $variantData['cost_price'],
                     'price' => $variantData['price'],
                     'stock' => $variantData['stock'],
                     'photo' => $variantPhoto,
@@ -177,6 +181,7 @@ class AdminProductController extends Controller
             'type' => 'required|in:lengan panjang,lengan pendek',
             'description' => 'nullable|string',
             'base_price' => 'required|numeric|min:0',
+            'selling_price' => 'required|numeric|min:0',
             'is_active' => 'nullable|boolean',
             
             // Variants
@@ -185,6 +190,7 @@ class AdminProductController extends Controller
             'variants.*.color' => 'required|string|max:50',
             'variants.*.color_hex' => 'required|string|max:7', // validate hex code
             'variants.*.size' => 'required|in:XS,S,M,L,XL,2XL,3XL,4XL,5XL',
+            'variants.*.cost_price' => 'required|numeric|min:0',
             'variants.*.price' => 'required|numeric|min:0',
             'variants.*.stock' => 'required|integer|min:0',
             'variants.*.photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
@@ -201,6 +207,7 @@ class AdminProductController extends Controller
                 'type' => $validated['type'],
                 'description' => $validated['description'] ?? null,
                 'base_price' => $validated['base_price'],
+                'selling_price' => $validated['selling_price'],
                 'is_active' => $validated['is_active'] ?? $product->is_active,
             ]);
 
@@ -246,6 +253,7 @@ class AdminProductController extends Controller
                         'color' => $variantData['color'],
                         'color_hex' => $variantData['color_hex'] ?? null,
                         'size' => $variantData['size'],
+                        'cost_price' => $variantData['cost_price'],
                         'price' => $variantData['price'],
                         'stock' => $variantData['stock'],
                         'sku' => ProductVariant::generateSKU($product->id, $variantData['color'], $variantData['size']),
@@ -260,6 +268,7 @@ class AdminProductController extends Controller
                         'color' => $variantData['color'],
                         'color_hex' => $variantData['color_hex'] ?? null,
                         'size' => $variantData['size'],
+                        'cost_price' => $variantData['cost_price'],
                         'price' => $variantData['price'],
                         'stock' => $variantData['stock'],
                         'photo' => $variantPhoto,

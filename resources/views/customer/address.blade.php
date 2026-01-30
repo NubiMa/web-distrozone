@@ -65,6 +65,7 @@
                         <div class="flex items-center justify-between border-t border-gray-100 pt-4">
                             <div class="flex gap-4">
                                 <button
+                                    onclick="openEditModal({{ $address->id }}, '{{ $address->label }}', '{{ $address->recipient_name }}', '{{ $address->phone }}', '{{ addslashes($address->address) }}', '{{ $address->city }}', '{{ $address->postal_code }}')"
                                     class="text-accent font-bold text-sm hover:text-accent-light flex items-center gap-1 transition-colors">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -212,4 +213,108 @@
             </div>
         </div>
     </div>
+
+    <!-- Edit Address Modal -->
+    <div id="editAddressModal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog"
+        aria-modal="true">
+        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
+            onclick="document.getElementById('editAddressModal').classList.add('hidden')"></div>
+
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                <div
+                    class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                    <form id="editAddressForm" method="POST">
+                        @csrf
+                        @method('PUT')
+                        <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                            <h3 class="text-xl font-bold font-display text-primary mb-6" id="modal-title">Edit Alamat
+                            </h3>
+
+                            <div class="space-y-4">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label
+                                            class="block text-xs font-bold text-gray-500 uppercase mb-1">Label</label>
+                                        <input type="text" name="label" id="edit_label"
+                                            placeholder="Rumah, Kantor..."
+                                            class="w-full border-gray-200 rounded-lg focus:ring-accent focus:border-accent text-sm py-3 px-4"
+                                            required>
+                                    </div>
+                                    <div>
+                                        <label
+                                            class="block text-xs font-bold text-gray-500 uppercase mb-1">Penerima</label>
+                                        <input type="text" name="recipient_name" id="edit_recipient_name"
+                                            placeholder="Nama Penerima"
+                                            class="w-full border-gray-200 rounded-lg focus:ring-accent focus:border-accent text-sm py-3 px-4"
+                                            required>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Nomor
+                                        Telepon</label>
+                                    <input type="text" name="phone" id="edit_phone" placeholder="08..."
+                                        class="w-full border-gray-200 rounded-lg focus:ring-accent focus:border-accent text-sm py-3 px-4"
+                                        required>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Alamat
+                                        Lengkap</label>
+                                    <textarea name="address" id="edit_address" rows="3" placeholder="Nama Jalan, No. Rumah, RT/RW, Patokan..."
+                                        class="w-full border-gray-200 rounded-lg focus:ring-accent focus:border-accent text-sm py-3 px-4" required></textarea>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label
+                                            class="block text-xs font-bold text-gray-500 uppercase mb-1">Kota/Kabupaten</label>
+                                        <input type="text" name="city" id="edit_city"
+                                            placeholder="Jakarta Selatan"
+                                            class="w-full border-gray-200 rounded-lg focus:ring-accent focus:border-accent text-sm py-3 px-4"
+                                            required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Kode
+                                            Pos</label>
+                                        <input type="text" name="postal_code" id="edit_postal_code"
+                                            placeholder="12345"
+                                            class="w-full border-gray-200 rounded-lg focus:ring-accent focus:border-accent text-sm py-3 px-4"
+                                            required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                            <button type="submit"
+                                class="inline-flex w-full justify-center rounded-md bg-accent px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-accent-light sm:ml-3 sm:w-auto">Update
+                                Alamat</button>
+                            <button type="button"
+                                class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                                onclick="document.getElementById('editAddressModal').classList.add('hidden')">Batal</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openEditModal(id, label, recipientName, phone, address, city, postalCode) {
+            // Set the form action to the correct update route
+            document.getElementById('editAddressForm').action = '/address/' + id;
+
+            // Populate the form fields
+            document.getElementById('edit_label').value = label;
+            document.getElementById('edit_recipient_name').value = recipientName;
+            document.getElementById('edit_phone').value = phone;
+            document.getElementById('edit_address').value = address;
+            document.getElementById('edit_city').value = city;
+            document.getElementById('edit_postal_code').value = postalCode;
+
+            // Show the modal
+            document.getElementById('editAddressModal').classList.remove('hidden');
+        }
+    </script>
 </x-app-layout>

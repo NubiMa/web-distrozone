@@ -216,6 +216,57 @@ class KasirTransactionController extends Controller
     }
 
     /**
+     * Mark verified order as shipped
+     */
+    public function markAsShipped(Request $request, $id)
+    {
+        $transaction = Transaction::findOrFail($id);
+
+        if ($transaction->transaction_type !== 'online') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only online transactions can be marked as shipped',
+            ], 400);
+        }
+
+        if ($transaction->payment_status !== 'verified') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only verified orders can be marked as shipped',
+            ], 400);
+        }
+
+        if ($transaction->order_status === 'shipped') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Order has already been marked as shipped',
+            ], 400);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $transaction->updateOrderStatus('shipped');
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Order marked as shipped successfully',
+                'data' => $transaction->fresh(),
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to mark order as shipped: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * Get pending online orders for verification
      */
     public function pendingOrders()
@@ -246,7 +297,9 @@ class KasirTransactionController extends Controller
         if ($status === 'pending') {
             $query->online()->pending();
         } elseif ($status === 'verified') {
-            $query->online()->verified();
+            $query->online()->verified()->where('order_status', '!=', 'shipped');
+        } elseif ($status === 'shipped') {
+            $query->online()->verified()->where('order_status', 'shipped');
         } elseif ($status === 'rejected') {
             $query->online()->where('payment_status', 'rejected');
         } elseif ($status === 'history') {

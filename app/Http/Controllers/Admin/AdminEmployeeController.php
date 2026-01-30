@@ -35,6 +35,10 @@ class AdminEmployeeController extends Controller
 
         $staff = $query->latest()->paginate(15);
 
+        if ($request->ajax()) {
+            return view('admin.staff.partials.table_body', compact('staff'))->render();
+        }
+
         return view('admin.staff.index', compact('staff'));
     }
 
@@ -62,6 +66,7 @@ class AdminEmployeeController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:users,username',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6',
             'nik' => 'required|string|size:16|unique:employees,nik',
@@ -76,6 +81,7 @@ class AdminEmployeeController extends Controller
             // Create user account for kasir
             $user = User::create([
                 'name' => $validated['name'],
+                'username' => $validated['username'],
                 'email' => $validated['email'],
                 'password' => Hash::make($validated['password']),
                 'role' => 'kasir',
@@ -134,6 +140,7 @@ class AdminEmployeeController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'username' => ['required', 'string', 'max:255', Rule::unique('users', 'username')->ignore($id)],
             'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($id)],
             'password' => 'nullable|string|min:6',
             'nik' => ['required', 'string', 'size:16', Rule::unique('employees', 'nik')->ignore($employee->id)],
@@ -149,6 +156,7 @@ class AdminEmployeeController extends Controller
             // Update user account
             $userData = [
                 'name' => $validated['name'],
+                'username' => $validated['username'],
                 'email' => $validated['email'],
                 'phone' => $validated['phone'],
                 'address' => $validated['address'],

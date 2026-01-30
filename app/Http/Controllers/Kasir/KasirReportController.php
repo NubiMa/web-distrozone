@@ -21,9 +21,29 @@ class KasirReportController extends Controller
      */
     public function index(Request $request)
     {
-        $startDate = $request->input('start_date', now()->startOfMonth()->format('Y-m-d'));
-        $endDate = $request->input('end_date', now()->format('Y-m-d'));
         $cashierId = auth()->id();
+
+        // Handle filter presets (today, week, month)
+        if ($request->has('filter')) {
+            switch ($request->filter) {
+                case 'today':
+                    $startDate = now()->format('Y-m-d');
+                    $endDate = now()->format('Y-m-d');
+                    break;
+                case 'week':
+                    $startDate = now()->startOfWeek()->format('Y-m-d');
+                    $endDate = now()->endOfWeek()->format('Y-m-d');
+                    break;
+                case 'month':
+                default:
+                    $startDate = now()->startOfMonth()->format('Y-m-d');
+                    $endDate = now()->endOfMonth()->format('Y-m-d');
+                    break;
+            }
+        } else {
+            $startDate = $request->input('start_date', now()->startOfMonth()->format('Y-m-d'));
+            $endDate = $request->input('end_date', now()->format('Y-m-d'));
+        }
 
         // 1. Filtered Report (Base)
         $report = $this->reportService->getFinancialReport($startDate, $endDate, $cashierId);
@@ -32,11 +52,22 @@ class KasirReportController extends Controller
         $dailySales = $this->reportService->getDailySales($startDate, $endDate, $cashierId);
 
         // 3. Recent Transactions (Filtered)
-        $transactions = \App\Models\Transaction::with(['details.productVariant.product', 'user'])
+        $query = \App\Models\Transaction::with(['details.productVariant.product', 'user'])
             ->where('cashier_id', $cashierId)
-            ->whereBetween('created_at', [$startDate, $endDate . ' 23:59:59'])
-            ->latest()
-            ->paginate(8); // limit to 8 for the table view
+            ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+
+        // Search functionality
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where('transaction_code', 'LIKE', "%{$search}%");
+        }
+
+        // Payment method filter
+        if ($request->has('payment_method') && $request->payment_method != '') {
+            $query->where('payment_method', $request->payment_method);
+        }
+
+        $transactions = $query->latest()->paginate(8);
 
         // 4. Metric: Sales Today (Strictly Today)
         $todayStart = now()->startOfDay();
@@ -54,9 +85,23 @@ class KasirReportController extends Controller
         // 6. Metric: Cash in Drawer (Filtered - 'tunai' only)
         $cashSales = \App\Models\Transaction::verified()
             ->where('cashier_id', $cashierId)
-            ->whereBetween('created_at', [$startDate, $endDate . ' 23:59:59'])
+            ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
             ->where('payment_method', 'tunai')
             ->sum('total');
+
+        // Handle AJAX requests
+        if ($request->ajax()) {
+            return response()->json([
+                'html' => view('kasir.reports.partials.transaction_table', compact('transactions'))->render(),
+                'summary' => [
+                    'total_transactions' => number_format($report['summary']['total_transactions']),
+                    'total_revenue' => number_format($totalRev, 0, ',', '.'),
+                    'todaySales' => number_format($todaySales, 0, ',', '.'),
+                    'avgOrderValue' => number_format($avgOrderValue, 0, ',', '.'),
+                    'cashSales' => number_format($cashSales, 0, ',', '.'),
+                ],
+            ]);
+        }
 
         return view('kasir.reports', compact(
             'report', 

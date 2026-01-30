@@ -1,7 +1,7 @@
 <x-guest-layout>
     <div class="bg-white py-12 md:py-20" x-data="{
         selectedSize: '{{ $availableSizes->first() ?? '' }}',
-        selectedColor: '{{ $availableColors->first() ?? '' }}',
+        selectedColor: '{{ $availableColors->first()->color ?? '' }}',
         variants: {{ $product->variants->toJson() }},
         quantity: 1,
     
@@ -54,15 +54,11 @@
                         </p>
                         <h1 class="text-3xl md:text-4xl font-bold font-display text-primary mb-4">{{ $product->name }}
                         </h1>
-                        <div class="flex items-end gap-4">
+                        <div class="grid gap-1">
                             <p class="text-2xl font-bold text-accent"
                                 x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(currentPrice)"></p>
-                            <span x-show="currentStock > 0"
-                                class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded font-bold mb-1">In
-                                Stock</span>
-                            <span x-show="currentStock <= 0"
-                                class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded font-bold mb-1">Out of
-                                Stock</span>
+                            <span class="text-lg text-gray-600 font-medium">Stock: <span
+                                    x-text="currentStock"></span></span>
                         </div>
                     </div>
 
@@ -97,17 +93,17 @@
                         <div>
                             <h3 class="font-bold text-primary mb-3 text-sm uppercase">Color</h3>
                             <div class="flex flex-wrap items-center gap-3">
-                                @foreach ($availableColors as $color)
-                                    <button type="button" @click="selectedColor = '{{ $color }}'"
-                                        :disabled="!isVariantAvailable(selectedSize, '{{ $color }}')"
+                                @foreach ($availableColors as $variant)
+                                    <button type="button" @click="selectedColor = '{{ $variant->color }}'"
+                                        :disabled="!isVariantAvailable(selectedSize, '{{ $variant->color }}')"
                                         class="group flex items-center gap-2 transition-opacity"
-                                        :class="!isVariantAvailable(selectedSize, '{{ $color }}') ?
+                                        :class="!isVariantAvailable(selectedSize, '{{ $variant->color }}') ?
                                             'opacity-40 cursor-not-allowed' : 'cursor-pointer'">
                                         <span class="w-8 h-8 rounded-full border-2 transition-all relative"
-                                            :class="selectedColor === '{{ $color }}' ?
+                                            :class="selectedColor === '{{ $variant->color }}' ?
                                                 'border-primary ring-2 ring-primary ring-offset-2' : 'border-gray-300'"
-                                            style="background-color: {{ strtolower($color) }}">
-                                            <span x-show="!isVariantAvailable(selectedSize, '{{ $color }}')"
+                                            style="background-color: {{ $variant->color_hex ?? $variant->color }}">
+                                            <span x-show="!isVariantAvailable(selectedSize, '{{ $variant->color }}')"
                                                 class="absolute inset-0 flex items-center justify-center">
                                                 <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor"
                                                     viewBox="0 0 24 24">
@@ -117,7 +113,7 @@
                                             </span>
                                         </span>
                                         <span
-                                            class="text-sm font-medium text-gray-700 capitalize group-hover:text-primary transition-colors">{{ $color }}</span>
+                                            class="text-sm font-medium text-gray-700 capitalize group-hover:text-primary transition-colors">{{ $variant->color }}</span>
                                     </button>
                                 @endforeach
                             </div>

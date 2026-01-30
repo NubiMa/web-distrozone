@@ -111,13 +111,13 @@
     </section>
 
     <!-- Categories -->
-    <section class="py-12 bg-white">
+    {{-- <section class="py-12 bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 class="text-4xl font-bold font-display text-primary tracking-tight mb-10">KATEGORI</h2>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 h-[600px]">
-                <!-- Long Sleeve Category -->
-                <div class="relative group overflow-hidden cursor-pointer h-full">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 h-[600px]"> --}}
+    <!-- Long Sleeve Category -->
+    {{-- <div class="relative group overflow-hidden cursor-pointer h-full">
                     <img src="https://images.unsplash.com/photo-1549570412-2342cb5270c9?q=80&w=1000&auto=format&fit=crop"
                         class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                         alt="Long Sleeve">
@@ -130,10 +130,10 @@
                             Lihat Koleksi <span class="text-accent">-></span>
                         </div>
                     </div>
-                </div>
+                </div> --}}
 
-                <!-- Short Sleeve Category -->
-                <div class="relative group overflow-hidden cursor-pointer h-full">
+    <!-- Short Sleeve Category -->
+    {{-- <div class="relative group overflow-hidden cursor-pointer h-full">
                     <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=1000&auto=format&fit=crop"
                         class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                         alt="Short Sleeve">
@@ -146,10 +146,10 @@
                             Lihat Koleksi <span class="text-accent">-></span>
                         </div>
                     </div>
-                </div>
-            </div>
+                </div> --}}
+    {{-- </div>
         </div>
-    </section>
+    </section> --}}
 
     <!-- Features / Values -->
     <section class="py-24 bg-gray-50 border-t border-gray-100">

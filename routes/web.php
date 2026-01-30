@@ -34,7 +34,8 @@ Route::get('/products/{id}', function ($id) {
     
     // Get available sizes and colors from variants
     $availableSizes = $product->variants->pluck('size')->unique()->sort()->values();
-    $availableColors = $product->variants->pluck('color')->unique()->values();
+    // Get unique variants by color to access color_hex
+    $availableColors = $product->variants->unique('color')->values();
     
     return view('products.show', compact('product', 'availableSizes', 'availableColors'));
 });
@@ -80,6 +81,7 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth', 'kasir'])->prefix('kasir/api')->group(function () {
     Route::get('/orders/pending', [App\Http\Controllers\Kasir\KasirTransactionController::class, 'pendingOrders']);
     Route::post('/orders/{id}/verify', [App\Http\Controllers\Kasir\KasirTransactionController::class, 'verifyPayment']);
+    Route::post('/orders/{id}/ship', [App\Http\Controllers\Kasir\KasirTransactionController::class, 'markAsShipped']);
     Route::get('/orders/{id}/verify', [App\Http\Controllers\Kasir\KasirTransactionController::class, 'verifyPage'])->name('orders.verify');
     Route::get('/transactions', [App\Http\Controllers\Kasir\KasirTransactionController::class, 'index']);
 });
@@ -220,7 +222,7 @@ Route::middleware(['auth'])->group(function () {
         ->name('kasir.orders.index');
 
     Route::get('/kasir/inventory', [\App\Http\Controllers\Kasir\KasirProductController::class, 'index'])->middleware('kasir')->name('kasir.inventory');
-    Route::get('/kasir/reports', [\App\Http\Controllers\Kasir\KasirReportController::class, 'index'])->middleware('kasir');
+    Route::get('/kasir/reports', [\App\Http\Controllers\Kasir\KasirReportController::class, 'index'])->middleware('kasir')->name('kasir.reports.index');
 
     Route::get('/kasir/profile', function () {
         return view('kasir.profile');
@@ -230,6 +232,9 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/kasir/profile/password', [\App\Http\Controllers\Kasir\KasirProfileController::class, 'updatePassword'])->middleware('kasir');
 });
 
+
+// Search Route
+Route::get('/search', [\App\Http\Controllers\GlobalSearchController::class, 'search'])->name('search');
 
 // Chatbot Route (Public)
 Route::post('/chatbot/ask', [\App\Http\Controllers\ChatbotController::class, 'handle'])->name('chatbot.ask');

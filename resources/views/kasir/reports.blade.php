@@ -1,38 +1,61 @@
 <x-kasir-layout>
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" id="reports-container">
         <!-- Header & Filter -->
-        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+        <div class="flex flex-col gap-6 mb-8">
             <div>
-                <h1 class="text-3xl font-bold text-gray-900">Cashier Reports</h1>
-                <p class="text-gray-500 mt-1">Daily performance overview & analytics</p>
+                <h1 class="text-3xl font-bold text-gray-900">Laporan Kasir</h1>
+                <p class="text-gray-500 mt-1">Ringkasan performa dan analitik penjualan</p>
             </div>
 
-            <!-- Filter -->
-            <form action="{{ url('/kasir/reports') }}" method="GET"
-                class="bg-white p-1.5 rounded-xl border border-gray-200 shadow-sm flex items-center gap-2">
-                <div class="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-200">
-                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">FROM</span>
-                    <input type="date" name="start_date" value="{{ $startDate }}"
-                        class="bg-transparent border-none p-0 text-sm font-medium text-gray-900 focus:ring-0">
+            <!-- Live Filters -->
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 space-y-4">
+                <!-- Quick Filters -->
+                <div class="flex flex-wrap items-center gap-3">
+                    <span class="text-sm font-bold text-gray-700">Filter Cepat:</span>
+                    <button onclick="setFilter('today')" data-filter-btn="today"
+                        class="px-4 py-2 rounded-lg text-sm font-bold transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200">
+                        Hari Ini
+                    </button>
+                    <button onclick="setFilter('week')" data-filter-btn="week"
+                        class="px-4 py-2 rounded-lg text-sm font-bold transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200">
+                        Minggu Ini
+                    </button>
+                    <button onclick="setFilter('month')" data-filter-btn="month"
+                        class="px-4 py-2 rounded-lg text-sm font-bold transition-colors bg-orange-600 text-white">
+                        Bulan Ini
+                    </button>
                 </div>
-                <div class="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-200">
-                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">TO</span>
-                    <input type="date" name="end_date" value="{{ $endDate }}"
-                        class="bg-transparent border-none p-0 text-sm font-medium text-gray-900 focus:ring-0">
+
+                <!-- Search & Payment Method Filter -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Search -->
+                    <div class="relative">
+                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        <input id="search-input" type="text" oninput="handleSearch()"
+                            placeholder="Cari kode transaksi..."
+                            class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                    </div>
+
+                    <!-- Payment Method Filter -->
+                    <div>
+                        <select id="payment-method-select" onchange="applyFilters()"
+                            class="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                            <option value="">Semua Metode Pembayaran</option>
+                            <option value="tunai">Tunai</option>
+                            <option value="qris">QRIS</option>
+                            <option value="transfer">Transfer Bank</option>
+                        </select>
+                    </div>
                 </div>
-                <button type="submit"
-                    class="bg-black text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-gray-800 transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                    </svg>
-                    Filter
-                </button>
-            </form>
+            </div>
         </div>
 
         <!-- Summary Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div id="summary-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <!-- Total Transactions -->
             <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
                 <div class="flex justify-between items-start mb-4">
@@ -43,7 +66,7 @@
                         </svg>
                     </div>
                 </div>
-                <p class="text-sm text-gray-500 mb-1">Total Transactions</p>
+                <p class="text-sm text-gray-500 mb-1">Total Transaksi</p>
                 <div class="flex items-end gap-2">
                     <h3 class="text-3xl font-bold text-gray-900">
                         {{ number_format($report['summary']['total_transactions']) }}</h3>
@@ -66,7 +89,7 @@
                         </svg>
                     </div>
                 </div>
-                <p class="text-sm text-orange-700 font-medium mb-1 relative z-10">My Sales Today</p>
+                <p class="text-sm text-orange-700 font-medium mb-1 relative z-10">Penjualan Hari Ini</p>
                 <h3 class="text-3xl font-bold text-orange-900 relative z-10">Rp
                     {{ number_format($todaySales, 0, ',', '.') }}</h3>
             </div>
@@ -81,7 +104,7 @@
                         </svg>
                     </div>
                 </div>
-                <p class="text-sm text-gray-500 mb-1">Avg. Order Value</p>
+                <p class="text-sm text-gray-500 mb-1">Rata-rata Nilai Pesanan</p>
                 <h3 class="text-3xl font-bold text-gray-900">Rp {{ number_format($avgOrderValue, 0, ',', '.') }}</h3>
             </div>
 
@@ -95,7 +118,7 @@
                         </svg>
                     </div>
                 </div>
-                <p class="text-sm text-gray-500 mb-1">Cash in Drawer</p>
+                <p class="text-sm text-gray-500 mb-1">Uang Tunai di Laci</p>
                 <h3 class="text-3xl font-bold text-gray-900">Rp {{ number_format($cashSales, 0, ',', '.') }}</h3>
             </div>
         </div>
@@ -105,7 +128,7 @@
             <div class="lg:col-span-1">
                 <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
                     <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-lg font-bold text-gray-900">Payment Methods</h3>
+                        <h3 class="text-lg font-bold text-gray-900">Metode Pembayaran</h3>
                         <button class="text-gray-400 hover:text-gray-600">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -168,42 +191,40 @@
                 </div>
             </div>
 
-            <!-- Right: Recent Transactions -->
+            <!-- Right: Recent History -->
             <div class="lg:col-span-2">
                 <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                    <div class="p-6 flex justify-between items-center border-b border-gray-50">
-                        <h3 class="text-lg font-bold text-gray-900">Recent Transactions</h3>
-                        <a href="{{ route('kasir.orders.index') }}"
-                            class="text-sm font-bold text-orange-600 hover:text-orange-700 flex items-center gap-1">
-                            View All <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                            </svg>
-                        </a>
+                    <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">Riwayat Transaksi</h3>
+                            <p class="text-xs text-gray-500 mt-1">Daftar transaksi terbaru</p>
+                        </div>
+                        <span class="text-sm text-gray-400" id="loading-indicator"
+                            style="display: none;">Memuat...</span>
                     </div>
 
-                    <div class="overflow-x-auto">
+                    <div id="transactions-table" class="overflow-x-auto">
                         <table class="w-full whitespace-nowrap">
                             <thead>
                                 <tr class="bg-gray-50/50">
                                     <th
                                         class="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
-                                        Time</th>
+                                        Waktu</th>
                                     <th
                                         class="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
-                                        Order ID</th>
+                                        ID Pesanan</th>
                                     <th
                                         class="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
-                                        Items</th>
+                                        Item</th>
                                     <th
                                         class="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
-                                        Method</th>
+                                        Metode</th>
                                     <th
                                         class="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">
-                                        Amount</th>
-                                    <th
+                                        Total</th>
+                                    {{-- <th
                                         class="px-6 py-4 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">
-                                        Receipt</th>
+                                        Margin</th> --}}
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-50">
@@ -249,16 +270,32 @@
                                         <td class="px-6 py-4 text-right text-sm font-bold text-orange-600">
                                             Rp {{ number_format($transaction->total, 0, ',', '.') }}
                                         </td>
-                                        <td class="px-6 py-4 text-center">
-                                            <button class="text-gray-300 hover:text-gray-600 transition-colors">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                                                </svg>
-                                            </button>
-                                        </td>
+                                        {{-- <td class="px-6 py-4 text-center">
+                                            @php
+                                                // Calculate margin
+                                                $totalCost = $transaction->details->sum(function ($detail) {
+                                                    return $detail->cost_price * $detail->quantity;
+                                                });
+                                                $totalRevenue = $transaction->total;
+                                                $profit = $totalRevenue - $totalCost;
+                                                $margin = $totalRevenue > 0 ? ($profit / $totalRevenue) * 100 : 0;
+                                            @endphp
+                                            <div class="flex flex-col items-center gap-1">
+                                                <div class="flex items-center gap-2">
+                                                    @if ($margin > 0)
+                                                        <span class="text-green-600 font-bold text-sm">✓</span>
+                                                    @elseif($margin < 0)
+                                                        <span class="text-red-600 font-bold text-sm">✗</span>
+                                                    @else
+                                                        <span class="text-gray-400 font-bold text-sm">≈</span>
+                                                    @endif
+                                                    <span
+                                                        class="text-xs font-bold {{ $margin > 0 ? 'text-green-600' : ($margin < 0 ? 'text-red-600' : 'text-gray-500') }}">
+                                                        Rp {{ number_format(abs($profit), 0, ',', '.') }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </td> --}}
                                     </tr>
                                 @empty
                                     <tr>
@@ -297,4 +334,102 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // Global state
+        let currentFilter = '{{ request()->get('filter', 'month') }}';
+        let searchTimeout;
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set initial active filter button
+            updateFilterButtons();
+        });
+
+        // Set filter and apply
+        function setFilter(filterType) {
+            currentFilter = filterType;
+            updateFilterButtons();
+            applyFilters();
+        }
+
+        // Update button states
+        function updateFilterButtons() {
+            const buttons = document.querySelectorAll('[data-filter-btn]');
+            buttons.forEach(btn => {
+                const type = btn.getAttribute('data-filter-btn');
+                if (type === currentFilter) {
+                    btn.className =
+                        'px-4 py-2 rounded-lg text-sm font-bold transition-colors bg-orange-600 text-white';
+                } else {
+                    btn.className =
+                        'px-4 py-2 rounded-lg text-sm font-bold transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200';
+                }
+            });
+        }
+
+        // Handle search with debounce
+        function handleSearch() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                applyFilters();
+            }, 500);
+        }
+
+        // Apply all filters
+        function applyFilters() {
+            const searchInput = document.getElementById('search-input');
+            const paymentSelect = document.getElementById('payment-method-select');
+            const loadingIndicator = document.getElementById('loading-indicator');
+
+            // Show loading
+            if (loadingIndicator) {
+                loadingIndicator.style.display = 'inline';
+            }
+
+            // Build query parameters
+            const params = new URLSearchParams();
+            params.append('filter', currentFilter);
+
+            const searchValue = searchInput ? searchInput.value : '';
+            if (searchValue) {
+                params.append('search', searchValue);
+            }
+
+            const paymentValue = paymentSelect ? paymentSelect.value : '';
+            if (paymentValue) {
+                params.append('payment_method', paymentValue);
+            }
+
+            // Fetch filtered data
+            fetch(`{{ route('kasir.reports.index') }}?${params.toString()}`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Update table
+                    if (data.html) {
+                        const tableContainer = document.getElementById('transactions-table');
+                        if (tableContainer) {
+                            tableContainer.innerHTML = data.html;
+                        }
+                    }
+
+                    // Hide loading
+                    if (loadingIndicator) {
+                        loadingIndicator.style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Hide loading on error
+                    if (loadingIndicator) {
+                        loadingIndicator.style.display = 'none';
+                    }
+                });
+        }
+    </script>
 </x-kasir-layout>
