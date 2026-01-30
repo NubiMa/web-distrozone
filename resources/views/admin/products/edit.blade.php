@@ -48,9 +48,16 @@
                 <div class="grid grid-cols-2 gap-4 mb-4">
                     <div>
                         <label for="brand" class="block text-sm font-bold text-gray-700 mb-2">Brand *</label>
-                        <input type="text" name="brand" id="brand" value="{{ old('brand', $product->brand) }}"
-                            required
+                        <select name="brand" id="brand" required
                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                            <option value="">Pilih Brand</option>
+                            @foreach (config('brands') as $brand)
+                                <option value="{{ $brand }}"
+                                    {{ old('brand', $product->brand) == $brand ? 'selected' : '' }}>
+                                    {{ $brand }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
                     <div>
                         <label for="type" class="block text-sm font-bold text-gray-700 mb-2">Tipe *</label>

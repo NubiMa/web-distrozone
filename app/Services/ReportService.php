@@ -17,7 +17,7 @@ class ReportService
      * @param int|null $cashierId Filter by cashier (optional)
      * @return array
      */
-    public function getFinancialReport(?string $startDate = null, ?string $endDate = null, ?int $cashierId = null): array
+    public function getFinancialReport(?string $startDate = null, ?string $endDate = null, ?int $cashierId = null, ?string $paymentMethod = null): array
     {
         // Default to current month if no dates provided
         $start = $startDate ? Carbon::parse($startDate)->startOfDay() : Carbon::now()->startOfMonth();
@@ -30,6 +30,24 @@ class ReportService
         // Filter by cashier if provided
         if ($cashierId) {
             $query->where('cashier_id', $cashierId);
+        }
+
+        if ($paymentMethod) {
+            if ($paymentMethod === 'ewallet') {
+                $query->where('payment_method', 'like', '%Dana%');
+            } elseif ($paymentMethod === 'transfer') {
+                $query->where(function($q) {
+                    $q->where('payment_method', 'like', '%transfer%')
+                      ->orWhere('payment_method', 'like', '%Virtual Account%')
+                      ->orWhere('payment_method', 'like', '%Bank%');
+                })->where('payment_method', 'not like', '%Dana%');
+            } elseif ($paymentMethod === 'qris') {
+                $query->where('payment_method', 'like', '%Qris%');
+            } elseif ($paymentMethod === 'tunai') {
+                $query->where('payment_method', 'like', '%tunai%');
+            } else {
+                $query->where('payment_method', $paymentMethod);
+            }
         }
 
         $transactions = $query->with('details')->get();
@@ -90,7 +108,7 @@ class ReportService
      * @param int|null $cashierId
      * @return array
      */
-    public function getDailySales(?string $startDate = null, ?string $endDate = null, ?int $cashierId = null): array
+    public function getDailySales(?string $startDate = null, ?string $endDate = null, ?int $cashierId = null, ?string $paymentMethod = null): array
     {
         $start = $startDate ? Carbon::parse($startDate)->startOfDay() : Carbon::now()->startOfMonth();
         $end = $endDate ? Carbon::parse($endDate)->endOfDay() : Carbon::now()->endOfDay();
@@ -107,6 +125,24 @@ class ReportService
 
         if ($cashierId) {
             $query->where('cashier_id', $cashierId);
+        }
+
+        if ($paymentMethod) {
+            if ($paymentMethod === 'ewallet') {
+                $query->where('payment_method', 'like', '%Dana%');
+            } elseif ($paymentMethod === 'transfer') {
+                $query->where(function($q) {
+                    $q->where('payment_method', 'like', '%transfer%')
+                      ->orWhere('payment_method', 'like', '%Virtual Account%')
+                      ->orWhere('payment_method', 'like', '%Bank%');
+                })->where('payment_method', 'not like', '%Dana%');
+            } elseif ($paymentMethod === 'qris') {
+                $query->where('payment_method', 'like', '%Qris%');
+            } elseif ($paymentMethod === 'tunai') {
+                $query->where('payment_method', 'like', '%tunai%');
+            } else {
+                $query->where('payment_method', $paymentMethod);
+            }
         }
 
         return $query->get()->toArray();

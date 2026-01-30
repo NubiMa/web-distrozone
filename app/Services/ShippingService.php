@@ -42,6 +42,7 @@ class ShippingService
         }
 
         $shippingCost = $ratePerKg * $weightKg;
+        $estimatedDays = $this->getEstimatedDeliveryDays($destination);
 
         return [
             'success' => true,
@@ -51,6 +52,7 @@ class ShippingService
             'weight_kg' => $weightKg,
             'rate_per_kg' => $ratePerKg,
             'shipping_cost' => $shippingCost,
+            'estimated_delivery_days' => $estimatedDays,
         ];
     }
 
@@ -87,6 +89,43 @@ class ShippingService
                            ->first();
         
         return $rate !== null;
+    }
+
+    /**
+     * Get estimated delivery days based on destination
+     * 
+     * @param string $destination
+     * @return int
+     */
+    public function getEstimatedDeliveryDays(string $destination): int
+    {
+        $destination = strtolower($destination);
+        
+        // Jakarta metropolitan area - 2 days
+        $jabodetabekCities = ['jakarta', 'bogor', 'depok', 'tangerang', 'bekasi'];
+        foreach ($jabodetabekCities as $city) {
+            if (str_contains($destination, $city)) {
+                return 2;
+            }
+        }
+        
+        // Jawa Barat - 3 days
+        if (str_contains($destination, 'jawa barat') || str_contains($destination, 'jabar')) {
+            return 3;
+        }
+        
+        // Jawa Tengah - 4 days
+        if (str_contains($destination, 'jawa tengah') || str_contains($destination, 'jateng')) {
+            return 4;
+        }
+        
+        // Jawa Timur - 5 days
+        if (str_contains($destination, 'jawa timur') || str_contains($destination, 'jatim')) {
+            return 5;
+        }
+        
+        // Default fallback
+        return 3;
     }
 
     /**

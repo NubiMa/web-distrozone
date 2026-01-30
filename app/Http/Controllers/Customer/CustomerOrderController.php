@@ -200,6 +200,40 @@ class CustomerOrderController extends Controller
     }
 
     /**
+     * Mark order as received by customer
+     */
+    public function markAsReceived($id)
+    {
+        try {
+            $order = Transaction::where('user_id', auth()->id())
+                ->findOrFail($id);
+
+            // Validate that order is in shipped status
+            if (strtolower($order->order_status) !== 'shipped') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Only shipped orders can be marked as received.',
+                ], 400);
+            }
+
+            // Update order status to completed
+            $order->order_status = 'completed';
+            $order->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Order marked as received successfully.',
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update order: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * Get available shipping destinations
      */
     public function shippingDestinations()

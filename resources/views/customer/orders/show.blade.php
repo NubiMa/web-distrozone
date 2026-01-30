@@ -106,6 +106,21 @@
                         </div>
                     @endforeach
                 </div>
+
+                @if ($order->shipped_at)
+                    @php
+                        $shippingService = app(\App\Services\ShippingService::class);
+                        $estimatedDays = $shippingService->getEstimatedDeliveryDays($order->shipping_destination);
+                        $estimatedDelivery = $order->shipped_at->addDays($estimatedDays);
+                    @endphp
+                    <div class="mt-4 text-center">
+                        <p class="text-xs text-gray-500">
+                            Estimasi tiba: <span
+                                class="font-bold text-accent">{{ $estimatedDelivery->format('d F Y') }}</span>
+                            ({{ $estimatedDays }} hari kerja)
+                        </p>
+                    </div>
+                @endif
             </div>
 
             <!-- Two Columns Grid -->
@@ -149,8 +164,16 @@
                                 <div class="p-6 flex items-center gap-4">
                                     <div
                                         class="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 border border-gray-100">
-                                        <img src="{{ $detail->productVariant->photo ?? $detail->productVariant->product->photo ? Storage::url($detail->productVariant->photo ?? $detail->productVariant->product->photo) : 'https://placehold.co/100x100/F5F5F5/999999?text=No+Image' }}"
-                                            class="w-full h-full object-cover">
+                                        @php
+                                            // Priority: Variant Photo -> Product Photo -> Placeholder
+                                            $photoPath =
+                                                $detail->productVariant->photo ??
+                                                ($detail->productVariant->product->photo ?? null);
+                                            $imageUrl = $photoPath
+                                                ? Storage::url($photoPath)
+                                                : 'https://placehold.co/100x100/F5F5F5/999999?text=No+Image';
+                                        @endphp
+                                        <img src="{{ $imageUrl }}" class="w-full h-full object-cover">
                                     </div>
                                     <div class="flex-1">
                                         <p class="text-[10px] text-accent font-bold uppercase tracking-wider mb-1">
@@ -353,10 +376,58 @@
                                 {{ number_format($order->total, 0, ',', '.') }}</span>
                         </div>
 
-                        <button
-                            class="w-full mt-6 bg-accent text-white font-bold py-3 rounded-lg shadow-lg shadow-accent/20 hover:bg-accent-light transition-colors uppercase tracking-wide">
-                            Hubungi Bantuan
-                        </button>
+                        @php
+                            $isShipped = strtolower($order->order_status) === 'shipped';
+                            $isCompleted = strtolower($order->order_status) === 'completed';
+                        @endphp
+
+                        @if ($isCompleted)
+                            <button disabled
+                                class="w-full mt-6 bg-green-100 text-green-700 font-bold py-3 rounded-lg border border-green-200 uppercase tracking-wide cursor-not-allowed">
+                                ✓ Paket Telah Diterima
+                            </button>
+                        @else
+                            <button id="confirmReceiptBtn" {{ $isShipped ? '' : 'disabled' }}
+                                class="w-full mt-6 font-bold py-3 rounded-lg shadow-lg uppercase tracking-wide transition-all {{ $isShipped ? 'bg-accent text-white shadow-accent/20 hover:bg-accent-light cursor-pointer' : 'bg-gray-300 text-gray-500 cursor-not-allowed' }}">
+                                Paket Telah di Terima
+                            </button>
+                        @endif
+
+                        @if ($isShipped)
+                            <script>
+                                document.getElementById('confirmReceiptBtn').addEventListener('click', function() {
+                                    if (confirm('Apakah Anda yakin telah menerima paket ini?')) {
+                                        const button = this;
+                                        button.disabled = true;
+                                        button.textContent = 'Memproses...';
+
+                                        fetch('{{ route('orders.mark-received', $order->id) }}', {
+                                                method: 'POST',
+                                                headers: {
+                                                    'Content-Type': 'application/json',
+                                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                                }
+                                            })
+                                            .then(response => response.json())
+                                            .then(data => {
+                                                if (data.success) {
+                                                    alert('Terima kasih! Pesanan telah dikonfirmasi diterima.');
+                                                    location.reload();
+                                                } else {
+                                                    alert('Gagal: ' + data.message);
+                                                    button.disabled = false;
+                                                    button.textContent = 'Paket Telah di Terima';
+                                                }
+                                            })
+                                            .catch(error => {
+                                                alert('Terjadi kesalahan. Silakan coba lagi.');
+                                                button.disabled = false;
+                                                button.textContent = 'Paket Telah di Terima';
+                                            });
+                                    }
+                                });
+                            </script>
+                        @endif
                     </div>
 
                     <!-- Help Card -->

@@ -90,6 +90,7 @@ Route::middleware(['auth', 'kasir'])->prefix('kasir/api')->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('/orders', [\App\Http\Controllers\Customer\CustomerOrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{id}', [\App\Http\Controllers\Customer\CustomerOrderController::class, 'show'])->name('orders.show');
+    Route::post('/orders/{id}/mark-received', [\App\Http\Controllers\Customer\CustomerOrderController::class, 'markAsReceived'])->name('orders.mark-received');
 });
 
 // Profile & Wishlist Routes (Placeholders)

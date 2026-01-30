@@ -47,6 +47,7 @@ class Transaction extends Model
         'total' => 'decimal:2',
         'weight_kg' => 'integer',
         'verified_at' => 'datetime',
+        'shipped_at' => 'datetime',
     ];
 
     /**
@@ -173,13 +174,21 @@ class Transaction extends Model
         if ($verifierId) {
             $this->verified_at = now();
             $this->verified_by = $verifierId;
+            $this->cashier_id = $verifierId;
         }
         $this->save();
     }
 
+    
     public function updateOrderStatus($status)
     {
         $this->order_status = $status;
+        
+        // Set shipped_at timestamp when order is marked as shipped
+        if ($status === 'shipped') {
+            $this->shipped_at = now();
+        }
+        
         $this->save();
     }
 }

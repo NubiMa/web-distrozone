@@ -62,6 +62,7 @@
                     'pending' => 'Perlu Verifikasi',
                     'verified' => 'Terverifikasi',
                     'shipped' => 'Dikirim',
+                    'completed' => 'Diterima',
                     'rejected' => 'Ditolak',
                     'history' => 'Riwayat Pesanan',
                 ];
@@ -163,65 +164,75 @@
                                         {{ number_format($order->total, 0, ',', '.') }}</span>
                                 </td>
                                 <td class="px-6 py-4 text-center">
-                                @if($order->order_status == 'shipped')
-                                    <span
-                                        class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700">
-                                        Dikirim
-                                    </span>
-                                @elseif($order->payment_status == 'verified' || $order->order_status == 'completed')
-                                    <span
-                                        class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700">
-                                        Terverifikasi
-                                    </span>
-                                @elseif($order->payment_status == 'pending')
-                                    <span
-                                        class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-orange-100 text-orange-700">
-                                        Menunggu
-                                    </span>
-                                @elseif($order->payment_status == 'rejected')
-                                    <span
-                                        class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">
-                                        Ditolak
-                                    </span>
-                                @else
-                                    <span
-                                        class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-700">
-                                        {{ ucfirst($order->payment_status) }}
-                                    </span>
-                        @endif
-                        </td>
-                        <td class="px-6 py-4 text-right">
-                            @if ($order->payment_status == 'pending' && $order->transaction_type == 'online')
-                                <a href="{{ route('orders.verify', $order->id) }}"
-                                    class="inline-flex items-center px-3 py-1.5 bg-orange-600 text-white text-xs font-bold rounded-lg hover:bg-orange-700 transition-colors shadow-sm shadow-orange-500/30">
-                                    Verifikasi
-                                    <svg class="ml-1.5 w-3 h-3" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </a>
-                            @elseif($order->payment_status == 'verified' && $order->order_status != 'shipped' && $order->transaction_type == 'online')
-                                <button
-                                    onclick="markAsShipped({{ $order->id }}, '{{ $order->transaction_code }}')"
-                                    class="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition-colors shadow-sm shadow-blue-500/30">
-                                    Tandai Dikirim
-                                    <svg class="ml-1.5 w-3 h-3" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M5 13l4 4L19 7" />
-                                    </svg>
-                                </button>
-                            @else
-                                <button class="text-gray-400 hover:text-gray-600 transition-colors">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </button>
-                            @endif
-                        </td>
-                        </tr>
+                                    @if ($order->order_status == 'shipped')
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700">
+                                            Dikirim
+                                        </span>
+                                    @elseif($order->order_status == 'completed')
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700">
+                                            Diterima
+                                        </span>
+                                    @elseif($order->payment_status == 'verified')
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700">
+                                            Terverifikasi
+                                        </span>
+                                    @elseif($order->payment_status == 'pending')
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-orange-100 text-orange-700">
+                                            Menunggu
+                                        </span>
+                                    @elseif($order->payment_status == 'rejected')
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">
+                                            Ditolak
+                                        </span>
+                                    @else
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-700">
+                                            {{ ucfirst($order->payment_status) }}
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    @if ($order->payment_status == 'pending' && $order->transaction_type == 'online')
+                                        <a href="{{ route('orders.verify', $order->id) }}"
+                                            class="inline-flex items-center px-3 py-1.5 bg-orange-600 text-white text-xs font-bold rounded-lg hover:bg-orange-700 transition-colors shadow-sm shadow-orange-500/30">
+                                            Verifikasi
+                                            <svg class="ml-1.5 w-3 h-3" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </a>
+                                    @elseif(
+                                        $order->payment_status == 'verified' &&
+                                            $order->order_status != 'shipped' &&
+                                            $order->order_status != 'completed' &&
+                                            $order->transaction_type == 'online')
+                                        <button
+                                            onclick="markAsShipped({{ $order->id }}, '{{ $order->transaction_code }}')"
+                                            class="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition-colors shadow-sm shadow-blue-500/30">
+                                            Tandai Dikirim
+                                            <svg class="ml-1.5 w-3 h-3" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        </button>
+                                    @else
+                                        <button class="text-gray-400 hover:text-gray-600 transition-colors">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </button>
+                                    @endif
+                                </td>
+                            </tr>
                         @empty
                             <tr>
                                 <td colspan="7" class="px-6 py-12 text-center">
@@ -239,176 +250,176 @@
                                     </div>
                                 </td>
                             </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div
+                class="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-sm text-gray-500">
+                    Menampilkan <span class="font-medium">{{ $orders->firstItem() ?? 0 }}</span> sampai <span
+                        class="font-medium">{{ $orders->lastItem() ?? 0 }}</span> dari <span
+                        class="font-medium">{{ $orders->total() }}</span> pesanan
+                </p>
+                @if ($orders->hasPages())
+                    <div class="flex gap-2">
+                        {{-- Previous --}}
+                        @if ($orders->onFirstPage())
+                            <span
+                                class="flex items-center px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-300 bg-white cursor-not-allowed">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 19l-7-7 7-7" />
+                                </svg>
+                                Sebelumnya
+                            </span>
+                        @else
+                            <a href="{{ $orders->previousPageUrl() }}"
+                                class="flex items-center px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 bg-white hover:bg-gray-50 hover:text-gray-900 transition-colors">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 19l-7-7 7-7" />
+                                </svg>
+                                Sebelumnya
+                            </a>
+                        @endif
+
+                        {{-- Next --}}
+                        @if ($orders->hasMorePages())
+                            <a href="{{ $orders->nextPageUrl() }}"
+                                class="flex items-center px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 bg-white hover:bg-gray-50 hover:text-gray-900 transition-colors">
+                                Berikutnya
+                                <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5l7 7-7 7" />
+                                </svg>
+                            </a>
+                        @else
+                            <span
+                                class="flex items-center px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-300 bg-white cursor-not-allowed">
+                                Berikutnya
+                                <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5l7 7-7 7" />
+                                </svg>
+                            </span>
+                        @endif
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    <!-- Verification Dialog (Alpine) -->
+    <div x-data="{ open: false, orderId: null, orderCode: '', notes: '' }"
+        @open-verification.window="open = true; orderId = $event.detail.id; orderCode = $event.detail.code"
+        x-show="open" x-cloak class="relative z-50">
+
+        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="open = false" x-transition.opacity></div>
+
+        <div class="fixed inset-0 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 animate-scale-up" @click.stop x-transition>
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900">Verifikasi Pesanan</h3>
+                        <p class="text-sm text-gray-500 mt-1">Pesanan #<span x-text="orderCode"></span></p>
+                    </div>
+                    <button @click="open = false" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
                 </div>
 
-                <!-- Pagination -->
-                <div
-                    class="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex flex-col md:flex-row justify-between items-center gap-4">
-                    <p class="text-sm text-gray-500">
-                        Menampilkan <span class="font-medium">{{ $orders->firstItem() ?? 0 }}</span> sampai <span
-                            class="font-medium">{{ $orders->lastItem() ?? 0 }}</span> dari <span
-                            class="font-medium">{{ $orders->total() }}</span> pesanan
-                    </p>
-                    @if ($orders->hasPages())
-                        <div class="flex gap-2">
-                            {{-- Previous --}}
-                            @if ($orders->onFirstPage())
-                                <span
-                                    class="flex items-center px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-300 bg-white cursor-not-allowed">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M15 19l-7-7 7-7" />
-                                    </svg>
-                                    Sebelumnya
-                                </span>
-                            @else
-                                <a href="{{ $orders->previousPageUrl() }}"
-                                    class="flex items-center px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 bg-white hover:bg-gray-50 hover:text-gray-900 transition-colors">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M15 19l-7-7 7-7" />
-                                    </svg>
-                                    Sebelumnya
-                                </a>
-                            @endif
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Catatan Internal (Opsional)</label>
+                    <textarea x-model="notes" rows="3"
+                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-shadow resize-none"
+                        placeholder="Tambahkan catatan tentang verifikasi ini..."></textarea>
+                </div>
 
-                            {{-- Next --}}
-                            @if ($orders->hasMorePages())
-                                <a href="{{ $orders->nextPageUrl() }}"
-                                    class="flex items-center px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 bg-white hover:bg-gray-50 hover:text-gray-900 transition-colors">
-                                    Berikutnya
-                                    <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </a>
-                            @else
-                                <span
-                                    class="flex items-center px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-300 bg-white cursor-not-allowed">
-                                    Berikutnya
-                                    <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </span>
-                            @endif
-                        </div>
-                    @endif
+                <div class="flex gap-3">
+                    <button @click="submitVerification(orderId, 'reject', notes)"
+                        class="flex-1 px-4 py-3 rounded-xl border-2 border-red-100 text-red-600 font-bold hover:bg-red-50 hover:border-red-200 transition-colors">
+                        Tolak
+                    </button>
+                    <button @click="submitVerification(orderId, 'approve', notes)"
+                        class="flex-1 px-4 py-3 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 shadow-lg shadow-green-500/30 transition-all hover:scale-[1.02]">
+                        Setujui Pembayaran
+                    </button>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Verification Dialog (Alpine) -->
-        <div x-data="{ open: false, orderId: null, orderCode: '', notes: '' }"
-            @open-verification.window="open = true; orderId = $event.detail.id; orderCode = $event.detail.code"
-            x-show="open" x-cloak class="relative z-50">
-
-            <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="open = false" x-transition.opacity></div>
-
-            <div class="fixed inset-0 flex items-center justify-center p-4">
-                <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 animate-scale-up" @click.stop x-transition>
-                    <div class="flex justify-between items-start mb-6">
-                        <div>
-                            <h3 class="text-xl font-bold text-gray-900">Verifikasi Pesanan</h3>
-                            <p class="text-sm text-gray-500 mt-1">Pesanan #<span x-text="orderCode"></span></p>
-                        </div>
-                        <button @click="open = false" class="text-gray-400 hover:text-gray-600">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                    </div>
-
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Catatan Internal (Opsional)</label>
-                        <textarea x-model="notes" rows="3"
-                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-shadow resize-none"
-                            placeholder="Tambahkan catatan tentang verifikasi ini..."></textarea>
-                    </div>
-
-                    <div class="flex gap-3">
-                        <button @click="submitVerification(orderId, 'reject', notes)"
-                            class="flex-1 px-4 py-3 rounded-xl border-2 border-red-100 text-red-600 font-bold hover:bg-red-50 hover:border-red-200 transition-colors">
-                            Tolak
-                        </button>
-                        <button @click="submitVerification(orderId, 'approve', notes)"
-                            class="flex-1 px-4 py-3 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 shadow-lg shadow-green-500/30 transition-all hover:scale-[1.02]">
-                            Setujui Pembayaran
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <script>
-            function openVerificationModal(id, code) {
-                window.dispatchEvent(new CustomEvent('open-verification', {
-                    detail: {
-                        id,
-                        code
-                    }
-                }));
-            }
-
-            async function submitVerification(id, action, notes) {
-                if (!confirm('Apakah Anda yakin ingin ' + (action === 'approve' ? 'menyetujui' : 'menolak') +
-                        ' pesanan ini?')) return;
-
-                try {
-                    const response = await fetch(`/kasir/api/orders/${id}/verify`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            action,
-                            notes
-                        })
-                    });
-
-                    const data = await response.json();
-
-                    if (data.success) {
-                        window.location.reload(); // Simple reload to refresh state
-                    } else {
-                        alert(data.message || 'Error processing verification');
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('An error occurred. Please try again.');
+    <script>
+        function openVerificationModal(id, code) {
+            window.dispatchEvent(new CustomEvent('open-verification', {
+                detail: {
+                    id,
+                    code
                 }
-            }
+            }));
+        }
 
-            async function markAsShipped(id, code) {
-                if (!confirm('Apakah Anda yakin ingin menandai pesanan ' + code + ' sebagai dikirim?')) return;
+        async function submitVerification(id, action, notes) {
+            if (!confirm('Apakah Anda yakin ingin ' + (action === 'approve' ? 'menyetujui' : 'menolak') +
+                    ' pesanan ini?')) return;
 
-                try {
-                    const response = await fetch(`/kasir/api/orders/${id}/ship`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                            'Accept': 'application/json'
-                        }
-                    });
+            try {
+                const response = await fetch(`/kasir/api/orders/${id}/verify`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action,
+                        notes
+                    })
+                });
 
-                    const data = await response.json();
+                const data = await response.json();
 
-                    if (data.success) {
-                        window.location.reload(); // Reload to reflect shipped status
-                    } else {
-                        alert(data.message || 'Gagal menandai pesanan sebagai dikirim');
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('Terjadi kesalahan. Silakan coba lagi.');
+                if (data.success) {
+                    window.location.reload(); // Simple reload to refresh state
+                } else {
+                    alert(data.message || 'Error processing verification');
                 }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
             }
-        </script>
-    </x-kasir-layout>
+        }
+
+        async function markAsShipped(id, code) {
+            if (!confirm('Apakah Anda yakin ingin menandai pesanan ' + code + ' sebagai dikirim?')) return;
+
+            try {
+                const response = await fetch(`/kasir/api/orders/${id}/ship`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    window.location.reload(); // Reload to reflect shipped status
+                } else {
+                    alert(data.message || 'Gagal menandai pesanan sebagai dikirim');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan. Silakan coba lagi.');
+            }
+        }
+    </script>
+</x-kasir-layout>

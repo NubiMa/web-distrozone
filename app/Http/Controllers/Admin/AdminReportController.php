@@ -45,14 +45,15 @@ class AdminReportController extends Controller
             $endDate = $request->input('end_date');
         }
 
-        // Check for cashier filter
+        // Check for cashier and payment method filter
         $cashierId = $request->get('cashier_id');
+        $paymentMethod = $request->get('payment_method');
 
         // Get financial report for ALL or specific cashier
-        $report = $this->reportService->getFinancialReport($startDate, $endDate, $cashierId);
+        $report = $this->reportService->getFinancialReport($startDate, $endDate, $cashierId, $paymentMethod);
         
         // Get daily sales for charts
-        $dailySales = $this->reportService->getDailySales($startDate, $endDate, $cashierId);
+        $dailySales = $this->reportService->getDailySales($startDate, $endDate, $cashierId, $paymentMethod);
 
         // Get recent transactions
         $query = \App\Models\Transaction::with(['details.productVariant.product', 'user', 'cashier.employee'])
@@ -75,6 +76,25 @@ class AdminReportController extends Controller
         // Apply cashier filter to transaction list as well
         if ($cashierId) {
             $query->where('cashier_id', $cashierId);
+        }
+
+        // Apply payment method filter
+        if ($paymentMethod) {
+            if ($paymentMethod === 'ewallet') {
+                $query->where('payment_method', 'like', '%Dana%');
+            } elseif ($paymentMethod === 'transfer') {
+                $query->where(function($q) {
+                    $q->where('payment_method', 'like', '%transfer%')
+                      ->orWhere('payment_method', 'like', '%Virtual Account%')
+                      ->orWhere('payment_method', 'like', '%Bank%');
+                })->where('payment_method', 'not like', '%Dana%');
+            } elseif ($paymentMethod === 'qris') {
+                $query->where('payment_method', 'like', '%Qris%');
+            } elseif ($paymentMethod === 'tunai') {
+                $query->where('payment_method', 'like', '%tunai%');
+            } else {
+                $query->where('payment_method', $paymentMethod);
+            }
         }
 
         $transactions = $query->latest()->paginate(15);

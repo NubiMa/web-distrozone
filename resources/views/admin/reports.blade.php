@@ -52,6 +52,19 @@
                         </select>
                     </div>
 
+                    <!-- Payment Method Select -->
+                    <div class="w-full md:w-48">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Filter Pembayaran</label>
+                        <select id="paymentFilter"
+                            class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all">
+                            <option value="">Semua Metode</option>
+                            <option value="tunai">Tunai</option>
+                            <option value="qris">QRIS</option>
+                            <option value="transfer">Transfer Bank</option>
+                            <option value="ewallet">E-Wallet</option>
+                        </select>
+                    </div>
+
                     <!-- Time Filter Buttons -->
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">Filter Pendapatan</label>
@@ -203,6 +216,11 @@
             fetchData(currentFilter, document.getElementById('searchInput').value);
         });
 
+        // Add event listener for Payment Filter
+        document.getElementById('paymentFilter').addEventListener('change', function() {
+            fetchData(currentFilter, document.getElementById('searchInput').value);
+        });
+
         function setFilter(filter) {
             currentFilter = filter;
 
@@ -221,7 +239,9 @@
 
         function fetchData(filter, search) {
             const cashierId = document.getElementById('cashierFilter').value;
-            let url = `{{ route('admin.reports') }}?filter=${filter}&search=${search}&cashier_id=${cashierId}`;
+            const paymentMethod = document.getElementById('paymentFilter').value;
+            let url =
+                `{{ route('admin.reports') }}?filter=${filter}&search=${search}&cashier_id=${cashierId}&payment_method=${paymentMethod}`;
 
             fetch(url, {
                     headers: {

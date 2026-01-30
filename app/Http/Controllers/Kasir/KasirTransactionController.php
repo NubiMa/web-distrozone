@@ -297,17 +297,22 @@ class KasirTransactionController extends Controller
         if ($status === 'pending') {
             $query->online()->pending();
         } elseif ($status === 'verified') {
-            $query->online()->verified()->where('order_status', '!=', 'shipped');
+            $query->online()->verified()->whereNotIn('order_status', ['shipped', 'completed']);
         } elseif ($status === 'shipped') {
             $query->online()->verified()->where('order_status', 'shipped');
         } elseif ($status === 'rejected') {
             $query->online()->where('payment_status', 'rejected');
+        } elseif ($status === 'completed') {
+            $query->online()->verified()->where('order_status', 'completed');
         } elseif ($status === 'history') {
-             // For history, maybe show all completed/verified/rejected? 
-             // Let's show all except pending for now, or just all.
-             // The design usually implies "Past orders".
-             // Let's show all non-pending online orders to avoid overlap or just EVERYTHING.
-             // Prompt said "4th is history order". Let's show all.
+            // History: Show all completed/rejected (both online and offline)
+            // Or maybe just offline transactions? The prompt says "history order from desktop application not apear here".
+            // Desktop app likely creates 'offline' transactions.
+            // So 'history' should probably show ALL transactions that are done (completed/rejected), regardless of type.
+            $query->where(function($q) {
+                $q->where('order_status', 'completed')
+                  ->orWhere('payment_status', 'rejected');
+            });
         }
 
         if ($search) {
